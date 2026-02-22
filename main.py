@@ -1,114 +1,118 @@
+import os
 import requests
-import env
+from datetime import datetime, timezone
+from dotenv import load_dotenv
+import time
 
-token = env.token
+load_dotenv()
+token = os.getenv("GITHUB_TOKEN")
 
-def get_popular_repos(keyword, num_repos):
-    url = f"https://api.github.com/search/repositories?q={keyword}&sort=stars&order=desc&per_page={num_repos}"
-    headers = {"Authorization": f"token {token}"}
-    response = requests.get(url, headers=headers )
-    if response.status_code == 200:
-        return response.json()["items"]
-    else:
-        raise Exception (f"Failed to fetch repositories: {response.status_code}")
-    
-def get_repo_detaoçs(owner, repo):
-    url = f"https://api.github.com/repos/{owner}/{repo}"
-    headers = {"Authorization": f"token {token}"}
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        raise Exception(f"Failed to fech repository details: {response.status_code}")
-    
-    
-def get_releases(owner, repo):
-    url = f"https://api.github.com/repos/{owner}/{repo}/releases"
-    headers = {"Authorization": f"token {token}"}
-    page = 1
-    releases = []
-    while True:
-        response = requests.get(f"{url}?page={page}&per_page=100", headers=headers)
-        if response.status_code == 200:
-            page_releases = response.json()
-            if not page_releases:
-                break
-            releases.extend(page_releases)
-            page += 1
-        else:
-            raise Exception(f"Failed to fetch releases: {response.status_code}")
-    return len(releases)
+if not token:
+    raise ValueError("Token não encontrado. Verifique se o arquivo .env contém GITHUB_TOKEN=seu_token")
 
-def get_pull_requests(owner, repo): 
-    url = f"https://api.github.com/repos/{owner}/{repo}/pulls?state=all"
-    headers = {"Authorization": f"token {token}"}
-    page = 1
-    pull_requests = []
-    while True:
-        response = requests.get(f"{url}&page={page}&per_page=100", headers=headers)
-        if response.status_code==200:
-            if not page_pull_requests:
-                break
-            pull_requests.extend(page_pul_requests)
-            page += 1
-        else:
-            raise Exception(f"Failed to fetch pul requests: {response.status_code}")
+URL = "https://api.github.com/graphql"
+HEADERS = {"Authorization": f"Bearer {token}"}
+
+QUERY = """
+query($cursor: String) {
+  search(query: "stars:>10000 sort:stars-desc", type: REPOSITORY, first: 10, after: $cursor) {
+    pageInfo {
+      endCursor
+      hasNextPage
+    }
+    nodes {
+      ... on Repository {
+        nameWithOwner
+        createdAt
+        updatedAt
+        primaryLanguage {
+          name
+        }
+        releases {
+          totalCount
+        }
+        pullRequests(states: MERGED) {
+          totalCount
+        }
+        totalIssues: issues {
+          totalCount
+        }
+        closedIssues: issues(states: CLOSED) {
+          totalCount
+        }
+      }
+    }
+  }
+}
+"""
+
+def fetch_100_repos():
+    repositorios = []
+    cursor = None 
+    
+    while len(repositorios) < 100:
+        variaveis = {"cursor": cursor}
+        response = requests.post(URL, json={'query': QUERY, 'variables': variaveis}, headers=HEADERS)
         
-    return len(pull_requests)
-    
-def get_closed_issues(owner, repo):
-    url = f"https://api.github.com/repos/{owner}/{repo}/issues?state=closed"
-    headers = {"Authorization": f"token {token}"}
-    page = 1
-    closed_issues = []
-    while True:
-        response = requests.get(f"{url}&page={page}&per_page=100", headers=headers)
         if response.status_code == 200:
-            page_closed_issues = response.json()
-            if not page_closed_issues:
-                break
-            closed_issues.extend(page_closed_issues)
-            page += 1
+            dados = response.json()
+            
+            if 'errors' in dados:
+                raise Exception(f"Erro na API do GitHub: {dados['errors']}")
+                
+            busca = dados['data']['search']
+            repositorios.extend(busca['nodes'])
+            
+            print(f"Coletados {len(repositorios)} repositórios...")
+            
+            page_info = busca['pageInfo']
+            if page_info['hasNextPage']:
+                cursor = page_info['endCursor']
+            else:
+                break 
+                
+            time.sleep(1)
         else:
-            raise Exception(f"Failed to fetch closed issues: {response.status_code}")
-        return len(closed_issues)
-    
-def collect_and_print_repo_info(repos):
+            raise Exception(f"Falha na requisição: {response.status_code} - {response.text}")
+            
+    return repositorios[:100] 
+
+def calculate_metrics_and_print(repos):
+    hoje = datetime.now(timezone.utc)
+
     for repo in repos:
-        owner = repo["owner"]["login"]
-        repo_name = repo["name"]
-        repo_details = get_repo_details(owner, repo_name)
-        
-        pull_requests = get_pull_requests(owner, repo_name)
-        releases = get_releases(owner, repo_name)
-        closed_issues = get_closed_issues(owner, repo_name)
-        
-        print(f"Repository: {repo_name}")
-        print(f"Owner: {owner}")
-        print(f"URL: {repo_details['html_url']}")    
-        print(f"Stars: {repo_details['stargazers_count']}")    
-        print(f"Forks: {repo_details['forks_count']}")    
-        print(f"Commits: {repo_details['open_issues_count']}")    
-        print(f"Watchers: {repo_details['watchers_count']}")    
-        print(f"Pull Requests: {pull_requests if pull_requests is not None else 'N/A'}")    
-        print(f"Last Commit Date: {repo_details['pushed_at']}")    
-        print(f"Main Language: {repo_details['language']}")    
-        print(f"License: {repo_details['license']['name'] if repo_details['license'] else 'No license'}")    
-        print(f"Contributors: {repo_details['network_count']}")    
-        print(f"Size: {repo_details['size']} KB")    
-        print(f"Main Branch: {repo_details['default_branch']}")    
-        print(f"Releases: {releases if releases is not None else 'N/A'}")    
-        print(f"Closed Issues: {closed_issues if closed_issues is not None else 'N/A'}")    
-        print(f"Topics: {repo_details[', '.join(repo_details['topics']) if 'topics' in repo_details else 'No topics']}")    
-        print(f"-" * 200)    
+        if not repo: 
+            continue
 
+        nome = repo['nameWithOwner']
+        
+        created_at = datetime.fromisoformat(repo['createdAt'].replace('Z', '+00:00'))
+        updated_at = datetime.fromisoformat(repo['updatedAt'].replace('Z', '+00:00'))
+        
+        idade_dias = (hoje - created_at).days
+        dias_sem_atualizar = (hoje - updated_at).days
+        
+        linguagem = repo['primaryLanguage']['name'] if repo['primaryLanguage'] else "Nenhuma"
+        
+        total_issues = repo['totalIssues']['totalCount']
+        closed_issues = repo['closedIssues']['totalCount']
+        razao_issues = (closed_issues / total_issues * 100) if total_issues > 0 else 0
 
-# Main
+        print(f"Repositório: {nome}")
+        print(f"RQ 01 (Idade): {idade_dias} dias")
+        print(f"RQ 02 (PRs Aceitos): {repo['pullRequests']['totalCount']}")
+        print(f"RQ 03 (Releases): {repo['releases']['totalCount']}")
+        print(f"RQ 04 (Sem atualizar): {dias_sem_atualizar} dias")
+        print(f"RQ 05 (Linguagem): {linguagem}")
+        print(f"RQ 06 (Razão Issues Fechadas): {razao_issues:.2f}% ({closed_issues} de {total_issues})")
+        print("-" * 50)
+
 if __name__ == "__main__":
-    keyword = "microservices"
-    num_repos = 10
+    print("Iniciando a busca em lotes para evitar sobrecarga (502)...")
     try:
-        popular_repos = get_popular_repos(keyword, num_repos)
-        collect_and_print_repo_info(popular_repos)
+        repos = fetch_100_repos()
+        print("\nCalculando as métricas finais...\n")
+        calculate_metrics_and_print(repos)
+        print(f"Total de repositórios analisados com sucesso: {len(repos)}")
     except Exception as e:
-        print(e)
+        print(f"\nErro durante a execução: {e}")
