@@ -1,9 +1,9 @@
 import os
 import requests
+import random
 from datetime import datetime, timezone
 from dotenv import load_dotenv
 import time
-
 load_dotenv()
 token = os.getenv("GITHUB_TOKEN")
 
@@ -15,6 +15,7 @@ HEADERS = {"Authorization": f"Bearer {token}"}
 
 QUERY = """
 query($cursor: String) {
+  # Busca os repositórios mais estrelados (ordem decrescente)
   search(query: "stars:>10000 sort:stars-desc", type: REPOSITORY, first: 10, after: $cursor) {
     pageInfo {
       endCursor
@@ -31,7 +32,16 @@ query($cursor: String) {
         releases {
           totalCount
         }
-        pullRequests(states: MERGED) {
+        # Trazer nós de PRs mesclados com `authorAssociation` para
+        # permitir contar PRs externos client-side (filtrar por associação).
+        pullRequests(states: MERGED, first: 100) {
+          nodes {
+            authorAssociation
+          }
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
           totalCount
         }
         totalIssues: issues {
@@ -47,35 +57,68 @@ query($cursor: String) {
 """
 
 def fetch_100_repos():
-    repositorios = []
-    cursor = None 
+  repositorios = []
+  cursor = None 
     
-    while len(repositorios) < 100:
-        variaveis = {"cursor": cursor}
-        response = requests.post(URL, json={'query': QUERY, 'variables': variaveis}, headers=HEADERS)
+  while len(repositorios) < 100:
+    variaveis = {"cursor": cursor}
+    # usa retries exponenciais simples para 5xx/erros transitórios
+    payload = {'query': QUERY, 'variables': variaveis}
+    response = post_with_retries(payload)
         
-        if response.status_code == 200:
-            dados = response.json()
+    if response.status_code == 200:
+      dados = response.json()
             
-            if 'errors' in dados:
-                raise Exception(f"Erro na API do GitHub: {dados['errors']}")
+      if 'errors' in dados:
+        raise Exception(f"Erro na API do GitHub: {dados['errors']}")
                 
-            busca = dados['data']['search']
-            repositorios.extend(busca['nodes'])
+      busca = dados['data']['search']
+      repositorios.extend(busca['nodes'])
             
-            print(f"Coletados {len(repositorios)} repositórios...")
+      print(f"Coletados {len(repositorios)} repositórios...")
             
-            page_info = busca['pageInfo']
-            if page_info['hasNextPage']:
-                cursor = page_info['endCursor']
-            else:
-                break 
+      page_info = busca['pageInfo']
+      if page_info['hasNextPage']:
+        cursor = page_info['endCursor']
+      else:
+        break 
                 
-            time.sleep(1)
-        else:
-            raise Exception(f"Falha na requisição: {response.status_code} - {response.text}")
+      time.sleep(1)
+    else:
+      raise Exception(f"Falha na requisição: {response.status_code} - {response.text}")
             
-    return repositorios[:100] 
+  return repositorios[:100]
+
+
+def post_with_retries(payload, max_retries: int = 4, base_delay: float = 1.0):
+  """Faz POST ao endpoint GraphQL com retries exponenciais para 5xx.
+
+  Retorna o objeto `requests.Response` final (pode ser não-200).
+  """
+  attempt = 0
+  while True:
+    attempt += 1
+    try:
+      resp = requests.post(URL, json=payload, headers=HEADERS)
+    except requests.RequestException as e:
+      if attempt >= max_retries:
+        raise
+      sleep_for = base_delay * (2 ** (attempt - 1)) + random.uniform(0, 0.5)
+      print(f"Request exception, retry {attempt}/{max_retries} after {sleep_for:.1f}s: {e}")
+      time.sleep(sleep_for)
+      continue
+
+    # sucesso não-5xx: retorna imediatamente
+    if resp.status_code < 500:
+      return resp
+
+    # 5xx: retry até max_retries
+    if attempt >= max_retries:
+      return resp
+
+    sleep_for = base_delay * (2 ** (attempt - 1)) + random.uniform(0, 0.5)
+    print(f"Received {resp.status_code}, retry {attempt}/{max_retries} after {sleep_for:.1f}s")
+    time.sleep(sleep_for)
 
 def calculate_metrics_and_print(repos):
     hoje = datetime.now(timezone.utc)
@@ -100,7 +143,17 @@ def calculate_metrics_and_print(repos):
 
         print(f"Repositório: {nome}")
         print(f"RQ 01 (Idade): {idade_dias} dias")
-        print(f"RQ 02 (PRs Aceitos): {repo['pullRequests']['totalCount']}")
+        # Conta PRs externos mesclados (autor não é OWNER/MEMBER/COLLABORATOR)
+        excluded = {"OWNER", "MEMBER", "COLLABORATOR"}
+        external_prs = 0
+
+        pr_conn = repo.get('pullRequests') or {}
+        nodes = pr_conn.get('nodes') or []
+        for node in nodes:
+          if node.get('authorAssociation') not in excluded:
+            external_prs += 1
+
+        print(f"RQ 02 (PRs Aceitos Externos): {external_prs}")
         print(f"RQ 03 (Releases): {repo['releases']['totalCount']}")
         print(f"RQ 04 (Sem atualizar): {dias_sem_atualizar} dias")
         print(f"RQ 05 (Linguagem): {linguagem}")
