@@ -17,7 +17,7 @@ HEADERS = {"Authorization": f"Bearer {token}"}
 
 QUERY = """
 query($cursor: String) {
-  search(query: "stars:>10000 sort:stars-desc", type: REPOSITORY, first: 10, after: $cursor) {
+    search(query: "stars:>10000 sort:stars-desc", type: REPOSITORY, first: 10, after: $cursor) {
     pageInfo {
       endCursor
       hasNextPage
@@ -93,7 +93,7 @@ def fetch_repos(total_target=1000):
             
     return repositorios[:total_target]
 
-def post_with_retries(payload, max_retries: int = 4, base_delay: float = 1.0):
+def post_with_retries(payload, max_retries: int = 10, base_delay: float = 1.0):
  
     attempt = 0
     while True:
@@ -172,12 +172,15 @@ def export_to_csv(data, filename="relatorio_repositorios.csv"):
 
     colunas = data[0].keys()
 
-    with open(filename, mode='w', newline='', encoding='utf-8') as arquivo_csv:
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    filepath = os.path.join(script_dir, filename)
+
+    with open(filepath, mode='w', newline='', encoding='utf-8') as arquivo_csv:
         writer = csv.DictWriter(arquivo_csv, fieldnames=colunas)
-        writer.writeheader() 
-        writer.writerows(data) 
-        
-    print(f"Sucesso! Dados exportados para o arquivo: {filename}")
+        writer.writeheader()
+        writer.writerows(data)
+
+    print(f"Sucesso! Dados exportados para o arquivo: {filepath}")
 
 if __name__ == "__main__":
     print("Iniciando a busca em lotes... Isso vai demorar um pouquinho (1000 repositórios).")
