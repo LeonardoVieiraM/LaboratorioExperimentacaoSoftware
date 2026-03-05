@@ -159,7 +159,7 @@ def process_metrics(repos):
             "Linguagem": linguagem,
             "Total Issues": total_issues,
             "Issues Fechadas": closed_issues,
-            "Razão Issues Fechadas (%)": round(razao_issues, 2)
+            "Razão Issues Fechadas (%)": str(round(razao_issues, 2)).replace('.', ',')
         })
 
     return metricas_organizadas
