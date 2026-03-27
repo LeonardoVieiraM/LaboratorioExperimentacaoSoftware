@@ -144,12 +144,12 @@ class RepositoryAnalyzer:
                             comments = json.loads(cloc_proc.stdout).get("Java", {}).get("comment", 0)
                         except Exception: comments = 0
 
-                    # Execução do CK com 4GB de RAM para lidar com repos grandes 
-                    print(f"   > Executando CK (Heap: 4GB)...")
+                    # Execução do CK com 8GB de RAM para lidar com repos grandes 
+                    print(f"   > Executando CK (Heap: 8GB)...")
                     subprocess.run([
-                        "java", "-Xmx4G", "-jar", CK_JAR_PATH,
+                        "java", "-Xmx8G", "-jar", CK_JAR_PATH,
                         str(repo_path), "true", "0", "false", str(repo_results_dir) + "/"
-                    ], capture_output=True, timeout=600)
+                    ], capture_output=True, timeout=900)
 
                     # Processamento das métricas de qualidade
                     class_csv = repo_results_dir / "class.csv"
