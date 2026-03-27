@@ -5,6 +5,7 @@ import subprocess
 import shutil
 import stat
 import pandas as pd
+import json
 from datetime import datetime, timezone
 from pathlib import Path
 from dotenv import load_dotenv
@@ -12,11 +13,14 @@ from dotenv import load_dotenv
 # Carrega arquivo .env
 load_dotenv()
 
-CK_JAR_PATH = os.getenv("CK_JAR_PATH")
-token = os.getenv("GITHUB_TOKEN")
+# Remove aspas se houver no arquivo .env
+CK_JAR_PATH = os.getenv("CK_JAR_PATH", "").replace('"', '').replace("'", "")
+token = os.getenv("GITHUB_TOKEN", "").replace('"', '').replace("'", "")
 
 if not token:
     raise ValueError("GITHUB_TOKEN não encontrado no arquivo .env")
+if not CK_JAR_PATH or not os.path.exists(CK_JAR_PATH):
+    raise ValueError(f"Arquivo CK não encontrado no caminho: {CK_JAR_PATH}. Verifique seu .env")
 
 URL = "https://api.github.com/graphql"
 HEADERS = {"Authorization": f"Bearer {token}"}
@@ -50,17 +54,16 @@ def on_rm_error(func, path, exc_info):
 class RepositoryAnalyzer:
     def __init__(self):
         self.base_dir = Path.cwd()
-        self.cloned_repos_dir = self.base_dir / "enunciado02/cloned_repos"
-        self.ck_results_dir = self.base_dir / "enunciado02/ck_results"
-        self.output_file = "enunciado02/metricas_finais_1000.csv"
+        self.cloned_repos_dir = self.base_dir / "cloned_repos"
+        self.ck_results_dir = self.base_dir / "ck_results"
+        self.output_file = "metricas_finais_1000.csv"
         
-        # 1.  Remove o CSV antigo ao iniciar uma nova execução do zero
         if os.path.exists(self.output_file):
             print(f"Limpando ficheiro de saída anterior: {self.output_file}")
             os.remove(self.output_file)
             
-        self.cloned_repos_dir.mkdir(exist_ok=True)
-        self.ck_results_dir.mkdir(exist_ok=True)
+        self.cloned_repos_dir.mkdir(parents=True, exist_ok=True)
+        self.ck_results_dir.mkdir(parents=True, exist_ok=True)
 
     def fetch_repos(self, total_target=1000):
         all_repos = []
@@ -69,6 +72,7 @@ class RepositoryAnalyzer:
             variables = {"cursor": cursor}
             response = requests.post(URL, json={"query": QUERY, "variables": variables}, headers=HEADERS)
             if response.status_code != 200:
+                print(f"Erro na API do GitHub: {response.status_code}")
                 break
             data = response.json().get("data", {}).get("search", {})
             nodes = data.get("nodes", [])
@@ -87,12 +91,10 @@ class RepositoryAnalyzer:
             
             print(f"\n[{i}/{len(repos)}] Processando: {name}")
 
-            # 2. Garante que a pasta está vazia antes do clone
             if repo_path.exists():
                 shutil.rmtree(repo_path, onerror=on_rm_error)
 
             try:
-                # Clone do repositório
                 print(f"   > Clonando...")
                 result = subprocess.run(
                     ["git", "-c", "core.longpaths=true", "clone", url, str(repo_path)], 
@@ -103,53 +105,75 @@ class RepositoryAnalyzer:
                     print(f"   > Erro no clone: {result.stderr.strip()}")
                     continue
 
-                # Filtro de arquivos Java
                 java_files = list(Path(repo_path).rglob("*.java"))
                 if not java_files:
                     print("   > Pulando: Nenhum arquivo Java encontrado.")
                     continue
 
-                # Execução do CK
+                print(f"   > Contando linhas de comentários com CLOC...")
+                comments = 0
+                try:
+                    cloc_process = subprocess.run(
+                        ["cloc", str(repo_path), "--json", "--quiet"],
+                        capture_output=True, text=True
+                    )
+                    if cloc_process.returncode == 0:
+                        cloc_data = json.loads(cloc_process.stdout)
+                        comments = cloc_data.get("Java", {}).get("comment", 0)
+                except Exception as e:
+                    print(f"   > Aviso: Erro ao executar CLOC: {e}")
+
                 repo_results_dir = self.ck_results_dir / f"{repo_folder}_tmp"
-                repo_results_dir.mkdir(exist_ok=True)
+                repo_results_dir.mkdir(parents=True, exist_ok=True)
                 
                 print(f"   > Analisando com CK...")
-                subprocess.run([
+                ck_process = subprocess.run([
                     "java", "-jar", CK_JAR_PATH,
-                    str(repo_path), "true", "0", "false", str(repo_results_dir) + os.sep
-                ], capture_output=True)
+                    str(repo_path), "true", "0", "false", str(repo_results_dir) + "/"
+                ], capture_output=True, text=True)
 
                 class_csv = repo_results_dir / "class.csv"
                 if class_csv.exists():
                     df_class = pd.read_csv(class_csv)
                     
-                    metrics = {
-                        "Nome": name,
-                        "Stars": repo["stargazerCount"],
-                        "Idade_Anos": round((datetime.now(timezone.utc) - datetime.fromisoformat(repo["createdAt"].replace("Z", "+00:00"))).days / 365.25, 2),
-                        "Releases": repo["releases"]["totalCount"],
-                        "LOC": int(df_class["loc"].sum()),
-                        "CBO_Media": round(df_class["cbo"].mean(), 2),
-                        "DIT_Media": int(df_class["dit"].max()),
-                        "LCOM_Media": round(df_class["lcom"].mean(), 2)
-                    }
+                    if df_class.empty:
+                        print("   > Falha: CK gerou um arquivo vazio (projeto muito complexo ou sem classes suportadas).")
+                    else:
+                        def safe_val(val):
+                            return round(float(val), 2) if not pd.isna(val) else 0.0
+
+                        metrics = {
+                            "Nome": name,
+                            "Stars": repo["stargazerCount"],
+                            "Idade_Anos": round((datetime.now(timezone.utc) - datetime.fromisoformat(repo["createdAt"].replace("Z", "+00:00"))).days / 365.25, 2),
+                            "Releases": repo["releases"]["totalCount"],
+                            "LOC": int(df_class["loc"].sum()) if not pd.isna(df_class["loc"].sum()) else 0,
+                            "Comentarios": comments,
+                            "CBO_Media": safe_val(df_class["cbo"].mean()),
+                            "CBO_Mediana": safe_val(df_class["cbo"].median()),
+                            "CBO_DesvioPadrao": safe_val(df_class["cbo"].std()),
+                            "DIT_Media": safe_val(df_class["dit"].mean()),
+                            "DIT_Mediana": safe_val(df_class["dit"].median()),
+                            "DIT_DesvioPadrao": safe_val(df_class["dit"].std()),
+                            "LCOM_Media": safe_val(df_class["lcom"].mean()),
+                            "LCOM_Mediana": safe_val(df_class["lcom"].median()),
+                            "LCOM_DesvioPadrao": safe_val(df_class["lcom"].std())
+                        }
+                        
+                        df_temp = pd.DataFrame([metrics])
+                        df_temp.to_csv(self.output_file, mode='a', header=not os.path.exists(self.output_file), index=False)
+                        
+                        print(f"   > Sucesso: {name} (LOC: {metrics['LOC']}, Comentários: {metrics['Comentarios']})")
                     
-                    # 3. Escreve no CSV imediatamente para salvar progresso
-                    df_temp = pd.DataFrame([metrics])
-                    df_temp.to_csv(self.output_file, mode='a', header=not os.path.exists(self.output_file), index=False)
-                    
-                    print(f"   > Sucesso: {name} (LOC: {metrics['LOC']})")
-                    
-                    # Limpa resultados temporários do CK
                     shutil.rmtree(repo_results_dir, onerror=on_rm_error)
                 else:
                     print("   > Falha: CK não gerou resultados.")
+                    print(f"   > MOTIVO: {ck_process.stderr.strip()}")
 
             except Exception as e:
                 print(f"   > Erro inesperado: {e}")
             
             finally:
-                # 4. Apaga a pasta clonada apos execução
                 if repo_path.exists():
                     shutil.rmtree(repo_path, onerror=on_rm_error)
                     print(f"   > Pasta temporária removida.")
@@ -157,9 +181,9 @@ class RepositoryAnalyzer:
 if __name__ == "__main__":
     analyzer = RepositoryAnalyzer()
     print("Buscando lista de repositórios no GitHub...")
-    # MUDAR TOTAL_TARGET PRA 1000 DPS
-    repos_to_analyze = analyzer.fetch_repos(total_target=10) 
+    # Ajustado para 1 conforme a exigência da Lab02S01
+    repos_to_analyze = analyzer.fetch_repos(total_target=1000) 
     
     print(f"Iniciando análise de {len(repos_to_analyze)} repositórios...")
     analyzer.process_metrics(repos_to_analyze)
-    print(f"\nProcesso concluído. Verifique o ficheiro: {analyzer.output_file}")
+    print(f"\nProcesso concluído. Verifique o arquivo: {analyzer.output_file}")
