@@ -51,7 +51,7 @@ def on_rm_error(func, path, exc_info):
 
 class RepositoryAnalyzer:
     def __init__(self):
-        self.base_dir = Path.cwd() / "enunciado02"
+        self.base_dir = Path.cwd() 
         self.cloned_repos_dir = self.base_dir / "cloned_repos"
         self.ck_results_dir = self.base_dir / "ck_results"
         self.output_file = self.base_dir / "metricas_finais_1000.csv"
@@ -122,11 +122,11 @@ class RepositoryAnalyzer:
                     print(f"   > Clonando...")
                     result = subprocess.run(
                         ["git", "-c", "core.longpaths=true", "clone", "--depth", "1", url, str(repo_path)], 
-                        capture_output=True, text=True, timeout=300
+                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=300
                     )
 
                     if result.returncode != 0:
-                        print(f"   > Erro no clone: {result.stderr.strip()[:100]}")
+                        print(f"   > Erro no clone. Pulando...")
                         continue
 
                     # Validação de conteúdo Java 
@@ -144,18 +144,19 @@ class RepositoryAnalyzer:
                             comments = json.loads(cloc_proc.stdout).get("Java", {}).get("comment", 0)
                         except Exception: comments = 0
 
-                    # Execução do CK com 8GB de RAM para lidar com repos grandes 
-                    print(f"   > Executando CK (Heap: 8GB)...")
+                    # Execução do CK com Heap de 4GB e jogando o output fora para salvar a RAM
+                    print(f"   > Executando CK (Heap: 4GB)...")
                     subprocess.run([
-                        "java", "-Xmx8G", "-jar", CK_JAR_PATH,
+                        "java", "-Xmx4G", "-jar", CK_JAR_PATH,
                         str(repo_path), "true", "0", "false", str(repo_results_dir) + "/"
-                    ], capture_output=True, timeout=900)
+                    ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=900)
 
                     # Processamento das métricas de qualidade
                     class_csv = repo_results_dir / "class.csv"
                     if class_csv.exists() and class_csv.stat().st_size > 0:
                         df_class = pd.read_csv(class_csv)
                         if not df_class.empty and "cbo" in df_class.columns:
+                            
                             metrics = {
                                 "Nome": name,
                                 "Popularidade_Stars": repo["stargazerCount"],
@@ -163,16 +164,11 @@ class RepositoryAnalyzer:
                                 "Atividade_Releases": repo["releases"]["totalCount"],
                                 "Tamanho_LOC": int(df_class["loc"].sum()),
                                 "Tamanho_Comentarios": comments,
-                                "CBO_Media": round(df_class["cbo"].mean(), 2),
-                                "CBO_Mediana": round(df_class["cbo"].median(), 2),
-                                "CBO_DesvioPadrao": round(df_class["cbo"].std(), 2),
-                                "DIT_Media": round(df_class["dit"].mean(), 2),
-                                "DIT_Mediana": round(df_class["dit"].median(), 2),
-                                "DIT_DesvioPadrao": round(df_class["dit"].std(), 2),
-                                "LCOM_Media": round(df_class["lcom"].mean(), 2),
-                                "LCOM_Mediana": round(df_class["lcom"].median(), 2),
-                                "LCOM_DesvioPadrao": round(df_class["lcom"].std(), 2)
+                                "CBO": round(df_class["cbo"].mean(), 2) if not pd.isna(df_class["cbo"].mean()) else 0.0,
+                                "DIT": round(df_class["dit"].mean(), 2) if not pd.isna(df_class["dit"].mean()) else 0.0,
+                                "LCOM": round(df_class["lcom"].mean(), 2) if not pd.isna(df_class["lcom"].mean()) else 0.0
                             }
+                            
                             # Escrita incremental no CSV
                             df_temp = pd.DataFrame([metrics])
                             df_temp.to_csv(self.output_file, mode='a', header=not os.path.exists(self.output_file), index=False)
@@ -197,6 +193,40 @@ class RepositoryAnalyzer:
             if not data.get("pageInfo", {}).get("hasNextPage"): break
             cursor = data.get("pageInfo", {}).get("endCursor")
 
+    def generate_global_summary(self):
+        """Lê o arquivo final e gera um segundo CSV com Média, Mediana e Desvio Padrão gerais."""
+        if not self.output_file.exists():
+            print("\n--> Arquivo principal não encontrado para gerar o resumo.")
+            return
+
+        print("\n--> Gerando arquivo de resumo estatístico geral...")
+        df = pd.read_csv(self.output_file)
+        
+        cols_alvo = ["CBO", "DIT", "LCOM", "Tamanho_LOC"]
+        cols_presentes = [c for c in cols_alvo if c in df.columns]
+        
+        resumo_data = {
+            "Metrica": cols_presentes,
+            "Media": [round(df[col].mean(), 2) for col in cols_presentes],
+            "Mediana": [round(df[col].median(), 2) for col in cols_presentes],
+            "Desvio_Padrao": [round(df[col].std(), 2) for col in cols_presentes]
+        }
+        
+        df_resumo = pd.DataFrame(resumo_data)
+        
+        resumo_file = self.base_dir / "resumo_estatistico_geral.csv"
+        df_resumo.to_csv(resumo_file, index=False)
+        print(f"--> Resumo geral criado com sucesso: {resumo_file}")
+
 if __name__ == "__main__":
     analyzer = RepositoryAnalyzer()
-    analyzer.run_analysis(1000)
+    
+    try:
+        # 1. Dá a ordem para minerar os 1000 repositórios
+        analyzer.run_analysis(1000)
+    except KeyboardInterrupt:
+        # Se você pausar manualmente, ele avisa e salva o que tem
+        print("\n--> Aviso: Mineração interrompida manualmente pelo usuário.")
+    finally:
+        # 2. Gera o resumo quando terminar (ou for interrompido)
+        analyzer.generate_global_summary()
