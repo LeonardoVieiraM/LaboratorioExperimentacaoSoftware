@@ -2,8 +2,10 @@ import os
 import requests
 import time
 import pandas as pd
+import threading
 from datetime import datetime, timezone
 from dotenv import load_dotenv
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Carrega o token do arquivo .env
 load_dotenv()
@@ -14,6 +16,13 @@ if not GITHUB_TOKEN:
 
 URL_GITHUB = "https://api.github.com/graphql"
 HEADERS = {"Authorization": f"Bearer {GITHUB_TOKEN}"}
+
+csv_lock = threading.Lock()
+
+# Configurações globais
+TARGET_REPOS = 200  
+MIN_PRS_PER_REPO = 100  
+MAX_WORKERS = 2  
 
 # Query 1: Buscar os repositórios mais populares
 QUERY_REPOS = """
@@ -54,8 +63,58 @@ query($owner: String!, $name: String!, $cursor: String) {
 }
 """
 
-def fetch_top_repos(target=200):
-    print("--> Buscando os 200 repositórios mais populares...")
+def load_existing_data():
+    """
+    Carrega dados existentes do CSV e retorna a lista de PRs e conjunto de repositórios processados.
+    """
+    csv_path = "enunciado03/dataset_code_review.csv"
+    if os.path.exists(csv_path):
+        try:
+            df = pd.read_csv(csv_path)
+            processed_repos = set(df["Repositorio"].unique())
+            prs_data = df.to_dict('records')
+            print(f"--> Carregados dados existentes: {len(df)} PRs de {len(processed_repos)} repositórios.\n")
+            return prs_data, processed_repos
+        except Exception as e:
+            print(f"--> Erro ao carregar CSV existente: {e}. Iniciando do zero.\n")
+            return [], set()
+    return [], set()
+
+def get_unique_repo_count(prs_data):
+    """
+    Retorna o número de repositórios únicos no dataset de PRs.
+    """
+    return len(set(pr["Repositorio"] for pr in prs_data))
+
+def process_repo_task(repo_full_name, index, total):
+    """
+    Processa PRs de um repositório e retorna os resultados.
+    Retorna: (sucesso: bool, prs: list, repo_name: str)
+    Sucesso é True apenas se conseguir MIN_PRS_PER_REPO ou mais PRs.
+    """
+    try:
+        print(f"[{index}/{total}] Minerando PRs de: {repo_full_name}...")
+        prs = process_prs_for_repo(repo_full_name, limit_valid_prs=MIN_PRS_PER_REPO)
+        
+        if len(prs) >= MIN_PRS_PER_REPO:
+            print(f"   ✓ {repo_full_name}: {len(prs)} PRs coletadas (meta atingida)")
+            return (True, prs, repo_full_name)
+        else:
+            print(f"   ✗ {repo_full_name}: apenas {len(prs)} PRs (insuficiente, descartando)")
+            return (False, [], repo_full_name)
+    except Exception as e:
+        if "Múltiplos erros 502/504" in str(e):
+            print(f"   ✗ {repo_full_name}: múltiplos erros 502/504 do GitHub (ignorando)")
+        else:
+            print(f"[{index}/{total}] Erro ao processar {repo_full_name}: {type(e).__name__}")
+        return (False, [], repo_full_name)
+
+def fetch_top_repos(target=500):
+    """
+    Busca repositórios populares. Usa target>200 para ter opções em caso de filtros rigorosos.
+    Retorna lista de repositórios com pelo menos 100 PRs no GitHub.
+    """
+    print(f"--> Buscando os {target} repositórios mais populares...")
     repos = []
     cursor = None
     
@@ -75,6 +134,7 @@ def fetch_top_repos(target=200):
                         break
             
             if not data.get("pageInfo", {}).get("hasNextPage"):
+                print(f"   Fim da busca: {len(repos)} repositórios encontrados")
                 break
             cursor = data.get("pageInfo", {}).get("endCursor")
         except Exception as e:
@@ -87,18 +147,31 @@ def process_prs_for_repo(repo_full_name, limit_valid_prs=50):
     owner, name = repo_full_name.split("/")
     cursor = None
     valid_prs = []
+    error_502_504_count = 0  # Contador de erros 502/504
     
     while len(valid_prs) < limit_valid_prs:
         variables = {"owner": owner, "name": name, "cursor": cursor}
         try:
             response = requests.post(URL_GITHUB, json={"query": QUERY_PRS, "variables": variables}, headers=HEADERS)
             
+            # Verificar erros 502 ou 504
+            if response.status_code in [502, 504]:
+                error_502_504_count += 1
+                if error_502_504_count > 2:
+                    raise Exception(f"Múltiplos erros 502/504 ({error_502_504_count} tentativas)")
+                print(f"   ⚠ Erro {response.status_code} (tentativa {error_502_504_count}/2). Retentando...")
+                time.sleep(15)
+                continue
+            
             # Trava de segurança contra erros de HTML/Timeout do GitHub
             if response.status_code != 200:
                 print(f"   > GitHub muito ocupado (Status {response.status_code}). Pausando 10s...")
                 time.sleep(10)
                 continue
-                
+            
+            # Reset contador em sucesso
+            error_502_504_count = 0
+            
             data = response.json()
             if "errors" in data:
                 print(f"   > Erro GraphQL ignorado: {data['errors'][0].get('message')}")
@@ -162,30 +235,97 @@ def process_prs_for_repo(repo_full_name, limit_valid_prs=50):
             cursor = pull_requests.get("pageInfo", {}).get("endCursor")
             
         except Exception as e:
+            if "Múltiplos erros 502/504" in str(e):
+                raise
             print(f"   > Exceção ao ler PRs. Retentando em breve... ({type(e).__name__})")
             time.sleep(5)
             
     return valid_prs
 
 if __name__ == "__main__":
-    repos = fetch_top_repos(200)
-    print(f"--> {len(repos)} repositórios mapeados com sucesso!\n")
+    # Carregar dados existentes
+    todas_prs_validas, processed_repos = load_existing_data()
+    unique_repos_count = get_unique_repo_count(todas_prs_validas)
     
-    todas_prs_validas = []
+    # Buscar repositórios candidatos (com buffer)
+    candidate_repos = fetch_top_repos(target=500)
     
-    # Adicionamos um Try/Except geral para salvar os dados caso você precise cancelar
-    try:
-        for i, repo in enumerate(repos, 1):
-            print(f"[{i}/200] Minerando PRs de: {repo}...")
-            prs = process_prs_for_repo(repo, limit_valid_prs=50)
-            todas_prs_validas.extend(prs)
-            
-            # Salva o arquivo CSV de forma iterativa a cada repositório concluído
-            if todas_prs_validas:
-                df_temp = pd.DataFrame(todas_prs_validas)
-                df_temp.to_csv("dataset_code_review.csv", index=False)
-                print(f"   > Salvo! Total acumulado: {len(todas_prs_validas)} PRs válidas.")
-    except KeyboardInterrupt:
-        print("\n--> Mineração pausada manualmente!")
+    # Filtrar repositórios já processados
+    remaining_repos = [r for r in candidate_repos if r not in processed_repos]
+    print(f"--> Repositórios não processados: {len(remaining_repos)} (de {len(candidate_repos)} candidatos)\n")
+    
+    if not remaining_repos:
+        print("--> Todos os repositórios candidatos já foram processados!")
+        print(f"--> Dataset contém {unique_repos_count} repositórios e {len(todas_prs_validas)} PRs.")
+    else:
+        try:
+            # Loop para continuar até atingir TARGET_REPOS repositórios únicos
+            while unique_repos_count < TARGET_REPOS and remaining_repos:
+                repos_needed = TARGET_REPOS - unique_repos_count
+                batch = remaining_repos[:min(MAX_WORKERS * 2, len(remaining_repos))]
+                remaining_repos = remaining_repos[len(batch):]
+                
+                print(f"\n--> Processando lote com {len(batch)} repositórios (necessários: {repos_needed})...")
+                
+                with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+                    futures = {}
+                    for i, repo in enumerate(batch, 1):
+                        future = executor.submit(
+                            process_repo_task,
+                            repo,
+                            i,
+                            len(batch)
+                        )
+                        futures[future] = repo
+                    
+                    # Processar resultados conforme completam
+                    for future in as_completed(futures):
+                        try:
+                            success, prs, repo_name = future.result()
+                            if success:
+                                # Acesso thread-safe para escrita
+                                with csv_lock:
+                                    todas_prs_validas.extend(prs)
+                                    processed_repos.add(repo_name)
+                                    unique_repos_count = get_unique_repo_count(todas_prs_validas)
+                                    
+                                    # Salvar CSV após cada repo bem-sucedido
+                                    df_temp = pd.DataFrame(todas_prs_validas)
+                                    df_temp.to_csv("enunciado03/dataset_code_review.csv", index=False)
+                                    print(f"      > Salvo! Repositórios: {unique_repos_count}/{TARGET_REPOS}, PRs: {len(todas_prs_validas)}")
+                            else:
+                                # Se não sucesso, marcar como processado para não retentá-lo
+                                with csv_lock:
+                                    processed_repos.add(repo_name)
+                        except Exception as e:
+                            print(f"Erro em tarefa paralela: {type(e).__name__} - {str(e)}")
+                            # Marcar como processado mesmo em erro
+                            with csv_lock:
+                                if 'repo_name' in locals():
+                                    processed_repos.add(repo_name)
+                
+                if unique_repos_count >= TARGET_REPOS:
+                    print(f"\n✓ Meta atingida: {unique_repos_count} repositórios com {len(todas_prs_validas)} PRs!")
+                    break
+                
+                if not remaining_repos and unique_repos_count < TARGET_REPOS:
+                    print(f"\n⚠ Fim dos repositórios candidatos antes de atingir meta.")
+                    print(f"   {unique_repos_count}/{TARGET_REPOS} repositórios processados com sucesso.")
+                    break
         
-    print(f"\n--> Processo finalizado! O arquivo 'dataset_code_review.csv' está pronto.")
+        except KeyboardInterrupt:
+            print("\n--> Mineração pausada manualmente!")
+            with csv_lock:
+                df_final = pd.DataFrame(todas_prs_validas)
+                df_final.to_csv("enunciado03/dataset_code_review.csv", index=False)
+                print(f"--> Dados salvos: {len(todas_prs_validas)} PRs de {unique_repos_count} repositórios.")
+    
+    # Relatório final
+    print(f"\n" + "="*60)
+    print(f"PROCESSO FINALIZADO!")
+    print(f"={'='*60}")
+    print(f"Arquivo: dataset_code_review.csv")
+    print(f"Repositórios únicos: {unique_repos_count}/{TARGET_REPOS}")
+    print(f"Total de PRs coletadas: {len(todas_prs_validas)}")
+    print(f"PRs por repositório (média): {len(todas_prs_validas) / unique_repos_count if unique_repos_count > 0 else 0:.1f}")
+    print(f"{'='*60}")
