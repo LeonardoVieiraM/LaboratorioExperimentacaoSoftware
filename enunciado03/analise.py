@@ -8,7 +8,9 @@ definidas no enunciado do Laboratorio 03.
 Estrutura de saida:
     enunciado03/graficos/
         rq01_tamanho_vs_status.png
+        rq01_tamanho_vs_status_sem_outliers.png
         rq02_tempo_vs_status.png
+        rq02_tempo_vs_status_sem_outliers.png
         rq03_descricao_vs_status.png
         rq04_interacoes_vs_status.png
         rq05_tamanho_vs_revisoes.png
@@ -104,6 +106,19 @@ def cap_percentile(series, q=99):
     return series.clip(upper=cap)
 
 
+def remove_outliers_iqr(series):
+    """
+    Remove outliers extremos usando o metodo IQR (Interquartile Range).
+    Limites: [Q1 - 1.5*IQR, Q3 + 1.5*IQR]
+    """
+    Q1 = series.quantile(0.25)
+    Q3 = series.quantile(0.75)
+    IQR = Q3 - Q1
+    lower_bound = Q1 - 1.5 * IQR
+    upper_bound = Q3 + 1.5 * IQR
+    return series[(series >= lower_bound) & (series <= upper_bound)]
+
+
 # --- Carregamento e pre-processamento -----------------------------------------
 
 print("=" * 60)
@@ -182,6 +197,51 @@ def boxplot_status(ax, col, label, cap=True):
     ax.set_title(f"Mann-Whitney: {sig}", fontsize=9, color=TEXT_COLOR, pad=4)
 
 
+def boxplot_status_sem_outliers(ax, col, label):
+    """
+    Boxplot lado a lado MERGED vs CLOSED com remocao de outliers via IQR.
+    Aplica Mann-Whitney U para significancia estatistica.
+    """
+    data_m = remove_outliers_iqr(merged[col])
+    data_c = remove_outliers_iqr(closed[col])
+
+    bp = ax.boxplot(
+        [data_m, data_c],
+        labels=["MERGED", "CLOSED"],
+        patch_artist=True,
+        widths=0.5,
+        medianprops=dict(color="white", linewidth=2.5),
+        whiskerprops=dict(color=TEXT_COLOR, linewidth=1.2),
+        capprops=dict(color=TEXT_COLOR, linewidth=1.5),
+        flierprops=dict(marker="o", markerfacecolor=GRID_COLOR, markersize=2, alpha=0.4),
+    )
+    bp["boxes"][0].set(facecolor=MERGED_COLOR, alpha=0.85)
+    bp["boxes"][1].set(facecolor=CLOSED_COLOR, alpha=0.85)
+
+    # Adiciona a mediana como texto acima da caixa
+    for i, data in enumerate([data_m, data_c], 1):
+        med = data.median()
+        offset = med * 0.05 if med > 0 else 0.5
+        ax.text(i, med + offset, f"Md={med:.1f}", ha="center", va="bottom",
+                fontsize=9, color="white", fontweight="bold")
+
+    ax.set_ylabel(label, fontsize=11)
+    ax.grid(axis="y", alpha=0.3)
+
+    # Teste Mann-Whitney U nos dados sem outliers
+    stat_mw, p_mw = stats.mannwhitneyu(data_m, data_c, alternative="two-sided")
+    if p_mw < 0.001:
+        sig = "*** (p < 0.001)"
+    elif p_mw < 0.01:
+        sig = f"** (p = {p_mw:.4f})"
+    elif p_mw < 0.05:
+        sig = f"* (p = {p_mw:.4f})"
+    else:
+        sig = f"n.s. (p = {p_mw:.4f})"
+    ax.set_title(f"Mann-Whitney: {sig} [N_merged={len(data_m)}, N_closed={len(data_c)}]", 
+                 fontsize=9, color=TEXT_COLOR, pad=4)
+
+
 def scatter_rq(ax, x_col, y_col, x_label, y_label, cap_x=True, sample=3000):
     """
     Scatter plot com linha de tendencia e correlacao de Spearman (RQ 05-08).
@@ -246,6 +306,41 @@ legend_els = [mpatches.Patch(fc=MERGED_COLOR, label="MERGED"),
 ax.legend(handles=legend_els, fontsize=11)
 fig.tight_layout()
 save(fig, "rq02_tempo_vs_status.png")
+
+# ==============================================================================
+# RQ 01 - Tamanho vs Status (SEM OUTLIERS)
+# ==============================================================================
+print("\n[RQ 01 - SEM OUTLIERS] Tamanho vs Status")
+
+fig, axes = plt.subplots(1, 3, figsize=(16, 6))
+fig.suptitle("RQ 01 (Sem Outliers) - Tamanho dos PRs vs Feedback Final (Status)", 
+             fontsize=15, fontweight="bold", y=1.02)
+
+boxplot_status_sem_outliers(axes[0], "Tamanho_Arquivos",             "Arquivos Alterados")
+boxplot_status_sem_outliers(axes[1], "Tamanho_Linhas_Adicionadas",   "Linhas Adicionadas")
+boxplot_status_sem_outliers(axes[2], "Tamanho_Linhas_Removidas",     "Linhas Removidas")
+
+legend_els = [mpatches.Patch(fc=MERGED_COLOR, label="MERGED"),
+              mpatches.Patch(fc=CLOSED_COLOR,  label="CLOSED")]
+fig.legend(handles=legend_els, loc="upper right", fontsize=11)
+fig.tight_layout()
+save(fig, "rq01_tamanho_vs_status_sem_outliers.png")
+
+# ==============================================================================
+# RQ 02 - Tempo de Analise vs Status (SEM OUTLIERS)
+# ==============================================================================
+print("[RQ 02 - SEM OUTLIERS] Tempo de Analise vs Status")
+
+fig, ax = plt.subplots(figsize=(8, 6))
+fig.suptitle("RQ 02 (Sem Outliers) - Tempo de Analise (horas) vs Feedback Final (Status)", 
+             fontsize=14, fontweight="bold")
+
+boxplot_status_sem_outliers(ax, "Tempo_Analise_Horas", "Tempo de Analise (horas)")
+legend_els = [mpatches.Patch(fc=MERGED_COLOR, label="MERGED"),
+              mpatches.Patch(fc=CLOSED_COLOR,  label="CLOSED")]
+ax.legend(handles=legend_els, fontsize=11)
+fig.tight_layout()
+save(fig, "rq02_tempo_vs_status_sem_outliers.png")
 
 # ==============================================================================
 # RQ 03 - Descricao vs Status
