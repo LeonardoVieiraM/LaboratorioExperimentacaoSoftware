@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Dashboard Executivo: Análise do Impacto de Assistentes de IA na Manutenibilidade e Estabilidade de Código — TCC Engenharia de Software" />
+  <title>Dashboard IA Impact | Análise de Impacto · TCC</title>
+
+  <!-- ── Google Fonts ── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- ── Chart.js CDN ── -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <!-- ── Chart.js Box & Violin Plugin ── -->
+  <script src="https://cdn.jsdelivr.net/npm/@sgratzl/chartjs-chart-boxplot@4.4.3/build/index.umd.min.js"></script>
+  <!-- ── PapaParse CSV CDN ── -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+  <!-- ── Folha de Estilos Externa ── -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════════
+       CABEÇALHO TOPO
+  ══════════════════════════════════════════ -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>AI Impact Dashboard</h1>
+          <span>Análise de Impacto de Assistentes de IA · Metodologia GQM</span>
+        </div>
+      </div>
+      <div class="header-meta">
+        <div class="meta-badge" id="badge-repos">
+          <span class="badge-num" id="total-repos-header">—</span>
+          <span class="badge-label">Repositórios</span>
+        </div>
+        <div class="meta-badge meta-badge--accent">
+          <span class="badge-num">Python</span>
+          <span class="badge-label">Ecossistema</span>
+        </div>
+        <div class="status-dot" id="status-dot" title="Aguardando dados...">
+          <span class="dot"></span>
+          <span id="status-label">Carregando...</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════
+       LAYOUT PRINCIPAL: SIDEBAR + CONTEÚDO
+  ══════════════════════════════════════════ -->
+  <div class="app-layout">
+
+    <!-- ── PAINEL LATERAL DE FILTROS ── -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 6H21M7 12H17M11 18H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>Filtros</span>
+      </div>
+
+      <!-- Filtro: Estrelas (Stars) -->
+      <div class="filter-group">
+        <label class="filter-label">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.1l-3.8 2.2.7-4.3-3.1-3 4.3-.6z"/></svg>
+          Estrelas no GitHub
+        </label>
+        <div class="range-display">
+          <span id="stars-min-display">0</span>
+          <span>–</span>
+          <span id="stars-max-display">250k</span>
+        </div>
+        <div class="dual-range-wrapper">
+          <input type="range" id="stars-min" class="range-input range-min" min="0" max="250000" value="0" step="1000" aria-label="Mínimo de estrelas" />
+          <input type="range" id="stars-max" class="range-input range-max" min="0" max="250000" value="250000" step="1000" aria-label="Máximo de estrelas" />
+          <div class="range-track">
+            <div class="range-fill" id="stars-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtro: Idade (Age) -->
+      <div class="filter-group">
+        <label class="filter-label">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2" stroke-linecap="round"/></svg>
+          Idade do Repositório (anos)
+        </label>
+        <div class="range-display">
+          <span id="age-min-display">0</span>
+          <span>–</span>
+          <span id="age-max-display">20</span>
+        </div>
+        <div class="dual-range-wrapper">
+          <input type="range" id="age-min" class="range-input range-min" min="0" max="20" value="0" step="0.5" aria-label="Idade mínima" />
+          <input type="range" id="age-max" class="range-input range-max" min="0" max="20" value="20" step="0.5" aria-label="Idade máxima" />
+          <div class="range-track">
+            <div class="range-fill" id="age-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtro: AI Score -->
+      <div class="filter-group">
+        <label class="filter-label">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1L10 6H15L11 9L13 14L8 11L3 14L5 9L1 6H6Z"/></svg>
+          Score de IA (0–13+)
+        </label>
+        <div class="range-display">
+          <span id="ai-min-display">0</span>
+          <span>–</span>
+          <span id="ai-max-display">15</span>
+        </div>
+        <div class="dual-range-wrapper">
+          <input type="range" id="ai-min" class="range-input range-min" min="0" max="15" value="0" step="1" aria-label="AI score mínimo" />
+          <input type="range" id="ai-max" class="range-input range-max" min="0" max="15" value="15" step="1" aria-label="AI score máximo" />
+          <div class="range-track">
+            <div class="range-fill" id="ai-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botão Limpar Filtros -->
+      <button class="btn-clear" id="btn-clear-filters" aria-label="Limpar todos os filtros">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 3l10 10M13 3L3 13"/></svg>
+        Limpar Filtros
+      </button>
+
+      <!-- Legenda de Score IA -->
+      <div class="sidebar-legend">
+        <p class="legend-title">Score de IA</p>
+        <div class="legend-item"><span class="legend-dot" style="background:#60a5fa"></span>1–3 · Baixo uso</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#a78bfa"></span>4–7 · Moderado</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#f472b6"></span>8+ · Alto uso</div>
+      </div>
+    </aside>
+
+    <!-- ── ÁREA PRINCIPAL DE CONTEÚDO ── -->
+    <main class="content" id="main-content">
+
+      <!-- ── SPINNER DE CARREGAMENTO ── -->
+      <div class="loading-overlay" id="loading-overlay">
+        <div class="spinner-ring"></div>
+        <p>Carregando dados do CSV...</p>
+      </div>
+
+      <!-- ══════════════════════════════════
+           SEÇÃO: KPIs EXECUTIVOS
+      ══════════════════════════════════ -->
+      <section class="kpi-section" aria-label="KPIs Resumo Executivo">
+        <div class="section-header">
+          <h2 class="section-title">Resumo Executivo</h2>
+          <p class="section-subtitle">Métricas calculadas em tempo real com base na amostra filtrada</p>
+        </div>
+        <div class="kpi-grid">
+
+          <!-- KPI 1: Tamanho da Amostra -->
+          <div class="kpi-card" id="kpi-sample">
+            <div class="kpi-icon kpi-icon--blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><path d="M16 3.13a4 4 0 010 7.75"/><path d="M21 21v-2a4 4 0 00-3-3.87"/></svg>
+            </div>
+            <div class="kpi-body">
+              <span class="kpi-value" id="kpi-sample-value">—</span>
+              <span class="kpi-label">Repositórios Analisados</span>
+              <span class="kpi-sub" id="kpi-sample-sub">Tamanho da amostra</span>
+            </div>
+          </div>
+
+          <!-- KPI 2: Variação MTTR -->
+          <div class="kpi-card" id="kpi-mttr">
+            <div class="kpi-icon kpi-icon--purple">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3" stroke-linecap="round"/></svg>
+            </div>
+            <div class="kpi-body">
+              <span class="kpi-value" id="kpi-mttr-value">—</span>
+              <span class="kpi-label">Variação do MTTR</span>
+              <span class="kpi-sub" id="kpi-mttr-sub">Tempo médio de resolução (horas)</span>
+            </div>
+            <div class="kpi-delta" id="kpi-mttr-delta"></div>
+          </div>
+
+          <!-- KPI 3: Taxa de Correção Pós-IA -->
+          <div class="kpi-card" id="kpi-fix">
+            <div class="kpi-icon kpi-icon--amber">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="kpi-body">
+              <span class="kpi-value" id="kpi-fix-value">—</span>
+              <span class="kpi-label">Taxa de Correção Pós-IA</span>
+              <span class="kpi-sub" id="kpi-fix-sub">% Fix commits (média)</span>
+            </div>
+            <div class="kpi-delta" id="kpi-fix-delta"></div>
+          </div>
+
+          <!-- KPI 4: Variação do MI -->
+          <div class="kpi-card" id="kpi-mi">
+            <div class="kpi-icon kpi-icon--green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="kpi-body">
+              <span class="kpi-value" id="kpi-mi-value">—</span>
+              <span class="kpi-label">Variação do Índice MI</span>
+              <span class="kpi-sub" id="kpi-mi-sub">Δ Manutenibilidade (Pós − Pré)</span>
+            </div>
+            <div class="kpi-delta" id="kpi-mi-delta"></div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════
+           SEÇÃO Q1: PRODUTIVIDADE & FLUXO
+      ══════════════════════════════════ -->
+      <section class="charts-section" aria-label="Q1 Produtividade e Fluxo">
+        <div class="section-header">
+          <div class="section-badge section-badge--q1">Q1</div>
+          <div>
+            <h2 class="section-title">Produtividade &amp; Fluxo</h2>
+            <p class="section-subtitle">A IA diminuiu o MTTR e alterou volume de entregas e verbosidade de commits?</p>
+          </div>
+        </div>
+        <div class="charts-row">
+
+          <!-- Gráfico 1: MTTR Comparativo -->
+          <div class="chart-card chart-card--wide" id="card-mttr">
+            <div class="chart-card-header">
+              <div class="chart-title-group">
+                <h3 class="chart-title">Tempo Médio de Resolução (MTTR)</h3>
+                <p class="chart-subtitle">Comparação Pré-IA × Pós-IA por repositório · Escala logarítmica</p>
+              </div>
+              <div class="chart-legend-pills">
+                <span class="pill pill--pre">Pré-IA</span>
+                <span class="pill pill--pos">Pós-IA</span>
+              </div>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="chart-mttr" role="img" aria-label="Gráfico de MTTR Pré e Pós IA"></canvas>
+            </div>
+          </div>
+
+          <!-- Gráfico 3: Verbosidade -->
+          <div class="chart-card" id="card-lines">
+            <div class="chart-card-header">
+              <div class="chart-title-group">
+                <h3 class="chart-title">Verbosidade de Commits</h3>
+                <p class="chart-subtitle">Média de linhas alteradas por commit</p>
+              </div>
+              <div class="chart-legend-pills">
+                <span class="pill pill--pre">Pré-IA</span>
+                <span class="pill pill--pos">Pós-IA</span>
+              </div>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="chart-lines" role="img" aria-label="Gráfico de verbosidade de commits"></canvas>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════
+           SEÇÃO Q2: ESTABILIDADE & RETRABALHO
+      ══════════════════════════════════ -->
+      <section class="charts-section" aria-label="Q2 Estabilidade e Retrabalho">
+        <div class="section-header">
+          <div class="section-badge section-badge--q2">Q2</div>
+          <div>
+            <h2 class="section-title">Estabilidade &amp; Retrabalho</h2>
+            <p class="section-subtitle">A IA aumentou a injeção de bugs — taxas de Fix% e Revert%?</p>
+          </div>
+        </div>
+        <div class="charts-row">
+
+          <!-- Gráfico 2: Fix & Revert Agrupado -->
+          <div class="chart-card chart-card--wide" id="card-fix-revert">
+            <div class="chart-card-header">
+              <div class="chart-title-group">
+                <h3 class="chart-title">Taxas de Correção e Reversão</h3>
+                <p class="chart-subtitle">% Fix e % Revert — Pré-IA × Pós-IA (média da amostra)</p>
+              </div>
+            </div>
+            <div class="chart-wrapper chart-wrapper--medium">
+              <canvas id="chart-fix-revert" role="img" aria-label="Gráfico de taxas Fix e Revert"></canvas>
+            </div>
+          </div>
+
+          <!-- Mini cards de estatística Q2 -->
+          <div class="stat-stack">
+            <div class="stat-card" id="stat-fix">
+              <p class="stat-label">Δ Fix %</p>
+              <p class="stat-value" id="stat-fix-val">—</p>
+              <p class="stat-desc">Variação percentual na taxa de commits de correção</p>
+            </div>
+            <div class="stat-card" id="stat-revert">
+              <p class="stat-label">Δ Revert %</p>
+              <p class="stat-value" id="stat-revert-val">—</p>
+              <p class="stat-desc">Variação percentual na taxa de commits revertidos</p>
+            </div>
+            <div class="stat-card" id="stat-issues">
+              <p class="stat-label">Issues Pós-IA</p>
+              <p class="stat-value" id="stat-issues-val">—</p>
+              <p class="stat-desc">Média de issues abertas no período pós-IA</p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════
+           SEÇÃO Q3: COMPLEXIDADE ESTRUTURAL
+      ══════════════════════════════════ -->
+      <section class="charts-section" aria-label="Q3 Complexidade Estrutural">
+        <div class="section-header">
+          <div class="section-badge section-badge--q3">Q3</div>
+          <div>
+            <h2 class="section-title">Complexidade Estrutural</h2>
+            <p class="section-subtitle">O código gerado com IA é mais denso? — Índice de Manutenibilidade (MI)</p>
+          </div>
+        </div>
+        <div class="charts-row">
+
+          <!-- Gráfico 4: Divergência Global -->
+          <div class="chart-card chart-card--tall" id="card-divergence">
+            <div class="chart-card-header">
+              <div class="chart-title-group">
+                <h3 class="chart-title">Gráfico de Divergência Global</h3>
+                <p class="chart-subtitle">Crescimento percentual das métricas Pré → Pós IA · Verde = melhoria · Vermelho = piora</p>
+              </div>
+            </div>
+            <div class="chart-wrapper chart-wrapper--tall">
+              <canvas id="chart-divergence" role="img" aria-label="Gráfico de divergência de métricas"></canvas>
+            </div>
+          </div>
+
+          <!-- Gráfico MI scatter -->
+          <div class="chart-card" id="card-mi">
+            <div class="chart-card-header">
+              <div class="chart-title-group">
+                <h3 class="chart-title">Índice de Manutenibilidade (MI)</h3>
+                <p class="chart-subtitle">Distribuição Pré-IA vs Pós-IA por repositório</p>
+              </div>
+              <div class="chart-legend-pills">
+                <span class="pill pill--pre">Pré-IA</span>
+                <span class="pill pill--pos">Pós-IA</span>
+              </div>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="chart-mi" role="img" aria-label="Gráfico de Índice de Manutenibilidade"></canvas>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════
+           TABELA DE DADOS
+      ══════════════════════════════════ -->
+      <section class="table-section" aria-label="Tabela de Repositórios">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Tabela de Repositórios</h2>
+            <p class="section-subtitle">Dados detalhados da amostra filtrada</p>
+          </div>
+          <div class="table-controls">
+            <input type="text" id="table-search" class="table-search" placeholder="Buscar repositório..." aria-label="Buscar repositório" />
+            <span class="table-count" id="table-count">— repositórios</span>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table" id="data-table" role="table">
+            <thead>
+              <tr>
+                <th scope="col">Repositório</th>
+                <th scope="col" class="sortable" data-col="stars" aria-sort="none">⭐ Stars <span class="sort-icon">↕</span></th>
+                <th scope="col" class="sortable" data-col="age_years" aria-sort="none">Idade <span class="sort-icon">↕</span></th>
+                <th scope="col" class="sortable" data-col="ai_score" aria-sort="none">AI Score <span class="sort-icon">↕</span></th>
+                <th scope="col">MTTR Pré (h)</th>
+                <th scope="col">MTTR Pós (h)</th>
+                <th scope="col">Fix% Pré</th>
+                <th scope="col">Fix% Pós</th>
+                <th scope="col">MI Pré</th>
+                <th scope="col">MI Pós</th>
+                <th scope="col">Δ MI %</th>
+              </tr>
+            </thead>
+            <tbody id="table-body">
+              <!-- Preenchido por JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ── RODAPÉ ── -->
+      <footer class="app-footer">
+        <p>Dashboard desenvolvido para Trabalho de Conclusão de Curso — Engenharia de Software &mdash; Metodologia GQM</p>
+        <p>Dados: <code>analise_impacto_ia.csv</code> · Processado com PapaParse &amp; Chart.js</p>
+      </footer>
+
+    </main>
+  </div><!-- /.app-layout -->
+
+  <!-- ── JavaScript Externo ── -->
+  <script src="app.js"></script>
+</body>
+</html>
