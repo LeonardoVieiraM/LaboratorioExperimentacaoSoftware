@@ -1,172 +1,1478 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard IA Impact | Resultados MSR</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>AI Impact Dashboard | Repo Selection & Outlier Control</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+    <!-- Fonts & Libraries -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@sgratzl/chartjs-chart-boxplot@4.4.3/build/index.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@sgratzl/chartjs-chart-boxplot@4.4.3/build/index.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+      :root {
+        --bg-page: #f1f5f9;
+        --bg-card: #ffffff;
+        --sidebar-bg: #0b1120;
+        --header-bg: #030614;
+        --accent-blue: #3b82f6;
+        --accent-blue-light: #60a5fa;
+        --accent-red: #ef4444;
+        --accent-green: #10b981;
+        --accent-purple: #8b5cf6;
+        --text-dark: #0f172a;
+        --text-muted: #475569;
+        --border-light: #e2e8f0;
+        --sidebar-width: 320px;
+        --header-height: 72px;
+      }
 
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
+      body {
+        font-family: "Inter", sans-serif;
+        background: var(--bg-page);
+        color: var(--text-dark);
+      }
 
-  <header class="app-header">
-    <div class="header-inner">
-      <div class="header-brand">
-        <div class="brand-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><line x1="14" y1="10" x2="21" y2="3"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+      /* Header */
+      .app-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        height: var(--header-height);
+        background: var(--header-bg);
+        backdrop-filter: blur(2px);
+        display: flex;
+        align-items: center;
+        padding: 0 28px;
+        border-bottom: 1px solid #1e293b;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      }
+      .header-inner {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        align-items: center;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .brand-icon svg {
+        width: 32px;
+        color: var(--accent-blue);
+      }
+      .brand-text h1 {
+        font-family: "Space Grotesk", monospace;
+        font-size: 1.3rem;
+        font-weight: 600;
+        letter-spacing: -0.3px;
+        color: white;
+      }
+      .brand-text p {
+        font-size: 0.75rem;
+        color: #94a3b8;
+      }
+      .header-stats {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+      }
+      .stat-badge {
+        background: rgba(255, 255, 255, 0.08);
+        padding: 6px 14px;
+        border-radius: 40px;
+        text-align: center;
+      }
+      .stat-badge .num {
+        font-weight: 800;
+        font-size: 1rem;
+        color: white;
+      }
+      .stat-badge .label {
+        font-size: 0.7rem;
+        color: #94a3b8;
+        margin-left: 6px;
+      }
+      .status-dot {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.8rem;
+        color: #cbd5e1;
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+        background: #facc15;
+        border-radius: 50%;
+        animation: pulse 1.2s infinite;
+      }
+      @keyframes pulse {
+        0% {
+          opacity: 0.4;
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1.1);
+        }
+      }
+
+      /* Layout */
+      .app-layout {
+        display: flex;
+        min-height: calc(100vh - var(--header-height));
+      }
+      .sidebar {
+        width: var(--sidebar-width);
+        background: var(--sidebar-bg);
+        position: fixed;
+        height: calc(100vh - var(--header-height));
+        overflow-y: auto;
+        padding: 28px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        border-right: 1px solid #1e293b;
+      }
+      .sidebar-title {
+        font-family: "Space Grotesk", monospace;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #94a3b8;
+        margin-bottom: 18px;
+        border-bottom: 1px solid #334155;
+        padding-bottom: 10px;
+      }
+      .filter-group {
+        margin-bottom: 12px;
+      }
+      .filter-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #9ca3af;
+        margin-bottom: 8px;
+        display: block;
+      }
+      .range-values {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 8px;
+      }
+      .dual-range {
+        position: relative;
+        height: 28px;
+        margin-top: 6px;
+      }
+      .slider-track {
+        position: absolute;
+        top: 12px;
+        width: 100%;
+        height: 4px;
+        background: #334155;
+        border-radius: 4px;
+      }
+      .slider-fill {
+        position: absolute;
+        height: 4px;
+        background: var(--accent-blue);
+        border-radius: 4px;
+        top: 12px;
+      }
+      input[type="range"] {
+        position: absolute;
+        width: 100%;
+        background: transparent;
+        pointer-events: none;
+        -webkit-appearance: none;
+        top: 8px;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 16px;
+        height: 16px;
+        background: white;
+        border-radius: 50%;
+        pointer-events: auto;
+        cursor: pointer;
+        border: 2px solid var(--accent-blue);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+      }
+      .toggle-switch {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #1e293b;
+        padding: 12px 16px;
+        border-radius: 14px;
+        margin-top: 8px;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+      .toggle-switch:hover {
+        background: #2d3a4f;
+      }
+      .toggle-label {
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: #e2e8f0;
+      }
+      .toggle-track {
+        width: 44px;
+        height: 24px;
+        background: #475569;
+        border-radius: 40px;
+        position: relative;
+        transition: 0.2s;
+      }
+      .toggle-track.active {
+        background: var(--accent-blue);
+      }
+      .toggle-thumb {
+        width: 20px;
+        height: 20px;
+        background: white;
+        border-radius: 50%;
+        position: absolute;
+        top: 2px;
+        left: 3px;
+        transition: 0.2s;
+      }
+      .toggle-track.active .toggle-thumb {
+        left: 21px;
+      }
+      .btn-clear {
+        background: transparent;
+        border: 1px solid #334155;
+        color: #cbd5e6;
+        padding: 10px;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+        margin-top: 12px;
+      }
+      .btn-clear:hover {
+        background: #1e293b;
+        color: white;
+        border-color: var(--accent-blue);
+      }
+      .info-note {
+        font-size: 0.65rem;
+        color: #64748b;
+        text-align: center;
+        margin-top: 20px;
+      }
+
+      /* Repository selector styles */
+      .repo-search-area {
+        background: #1e293b;
+        border-radius: 14px;
+        padding: 12px;
+        margin-bottom: 8px;
+      }
+      .repo-search-input {
+        width: 100%;
+        background: #0f172a;
+        border: 1px solid #334155;
+        padding: 10px 12px;
+        border-radius: 10px;
+        color: white;
+        font-size: 0.8rem;
+        outline: none;
+        transition: 0.2s;
+      }
+      .repo-search-input:focus {
+        border-color: var(--accent-blue);
+      }
+      .repo-list {
+        max-height: 260px;
+        overflow-y: auto;
+        margin-top: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .repo-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 10px;
+        background: #0f172a;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.1s;
+        font-size: 0.75rem;
+        color: #cbd5e6;
+        border: 1px solid transparent;
+      }
+      .repo-item:hover {
+        background: #2d3a4f;
+      }
+      .repo-item.selected {
+        background: var(--accent-blue);
+        color: white;
+        border-color: #60a5fa;
+      }
+      .repo-item input {
+        pointer-events: none;
+      }
+      .repo-check {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--accent-blue);
+      }
+      .repo-name {
+        flex: 1;
+        font-family: monospace;
+        font-size: 0.7rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .selection-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .btn-small {
+        flex: 1;
+        background: #334155;
+        border: none;
+        padding: 6px;
+        border-radius: 8px;
+        color: white;
+        font-size: 0.7rem;
+        cursor: pointer;
+        font-weight: 500;
+      }
+      .btn-small:hover {
+        background: #475569;
+      }
+      .selected-count {
+        font-size: 0.7rem;
+        color: #94a3b8;
+        margin-top: 8px;
+        text-align: center;
+      }
+
+      /* Main content */
+      .content {
+        margin-left: var(--sidebar-width);
+        padding: 32px 36px;
+        flex: 1;
+        max-width: 1600px;
+      }
+      .loading-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(3, 6, 20, 0.92);
+        z-index: 200;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        color: white;
+      }
+      .loading-overlay.hidden {
+        display: none;
+      }
+      .spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid #334155;
+        border-top-color: var(--accent-blue);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* KPI */
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+        margin-bottom: 40px;
+      }
+      .kpi-tile {
+        background: var(--bg-card);
+        border-radius: 24px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        border: 1px solid var(--border-light);
+      }
+      .kpi-value {
+        font-family: "Space Grotesk", monospace;
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: var(--accent-blue);
+      }
+      .kpi-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        letter-spacing: 0.5px;
+      }
+      .chart-panel {
+        background: var(--bg-card);
+        border-radius: 28px;
+        padding: 28px;
+        margin-bottom: 40px;
+        border: 1px solid var(--border-light);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.02);
+      }
+      .panel-header {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        margin-bottom: 28px;
+        flex-wrap: wrap;
+      }
+      .badge-q {
+        padding: 6px 14px;
+        border-radius: 40px;
+        font-weight: 800;
+        font-size: 0.75rem;
+        font-family: monospace;
+      }
+      .badge-q1 {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      .badge-q2 {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .badge-q3 {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .panel-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        letter-spacing: -0.3px;
+      }
+      .grid-2cols {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 28px;
+      }
+      .chart-container {
+        height: 360px;
+        width: 100%;
+        position: relative;
+      }
+      .chart-container-lg {
+        height: 420px;
+      }
+      .mt-4 {
+        margin-top: 32px;
+      }
+      .chart-note {
+        text-align: center;
+        font-size: 0.7rem;
+        color: #6c757d;
+        margin-top: 8px;
+      }
+      @media (max-width: 1000px) {
+        .grid-2cols {
+          grid-template-columns: 1fr;
+        }
+        .content {
+          padding: 20px;
+        }
+        .kpi-grid {
+          gap: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="header-inner">
+        <div class="brand">
+          <div class="brand-icon">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path
+                d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+              />
+            </svg>
+          </div>
+          <div class="brand-text">
+            <h1>AI MAINTENABILITY IMPACT</h1>
+            <p>Select repositories · Outlier-aware analytics</p>
+          </div>
         </div>
-        <div class="brand-text">
-          <h1>Análise do Impacto de IA na Manutenibilidade</h1>
-          <span>Laboratório de Experimentação de Software · Metodologia GQM</span>
+        <div class="header-stats">
+          <div class="stat-badge">
+            <span class="num" id="total-repos-header">—</span
+            ><span class="label">selected repos</span>
+          </div>
+          <div class="status-dot">
+            <span class="dot"></span
+            ><span id="status-label">loading dataset</span>
+          </div>
         </div>
       </div>
-      <div class="header-meta">
-        <div class="meta-badge"><span class="badge-num" id="total-repos-header">—</span><span class="badge-label">Repositórios</span></div>
-        <div class="status-dot" id="status-dot"><span class="dot"></span><span id="status-label">Carregando CSV...</span></div>
-      </div>
-    </div>
-  </header>
+    </header>
 
-  <div class="app-layout">
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header"><span>Filtros de Análise</span></div>
+    <div class="app-layout">
+      <aside class="sidebar">
+        <div>
+          <div class="sidebar-title">FILTERS & SELECTION</div>
 
-      <div class="filter-group">
-        <label class="filter-label">Estrelas no GitHub</label>
-        <div class="range-display"><span id="stars-min-display">0</span><span>–</span><span id="stars-max-display">Max</span></div>
-        <div class="dual-range-wrapper">
-          <input type="range" id="stars-min" class="range-input range-min" />
-          <input type="range" id="stars-max" class="range-input range-max" />
-          <div class="range-track"><div class="range-fill" id="stars-fill"></div></div>
+          <!-- Outlier Removal Toggle -->
+          <div class="toggle-switch" id="outlier-toggle">
+            <span class="toggle-label">Remove outliers (IQR method)</span>
+            <div class="toggle-track" id="toggle-track">
+              <div class="toggle-thumb"></div>
+            </div>
+          </div>
+          <div class="info-note">
+            Excludes values beyond 1.5×IQR per metric.
+          </div>
+
+          <div style="margin: 16px 0 8px 0">
+            <hr style="border-color: #334155" />
+          </div>
+
+          <div class="filter-label">SELECT REPOSITORIES</div>
+          <div class="repo-search-area">
+            <input
+              type="text"
+              id="repo-search"
+              class="repo-search-input"
+              placeholder="Filter repositories by name..."
+            />
+            <div class="repo-list" id="repo-list-container">
+              <div style="color: #64748b; text-align: center; padding: 20px">
+                Loading repositories...
+              </div>
+            </div>
+            <div class="selection-actions">
+              <button class="btn-small" id="select-all-btn">Select All</button>
+              <button class="btn-small" id="clear-all-btn">Clear All</button>
+            </div>
+            <div class="selected-count" id="selected-count-display">
+              0 repositories selected
+            </div>
+          </div>
+
+          <div style="margin: 16px 0 8px 0">
+            <hr style="border-color: #334155" />
+          </div>
+
+          <div class="filter-group">
+            <span class="filter-label">GITHUB STARS</span>
+            <div class="range-values">
+              <span id="stars-min-display">0</span><span>—</span
+              ><span id="stars-max-display">max</span>
+            </div>
+            <div class="dual-range" id="stars-range"></div>
+          </div>
+          <div class="filter-group">
+            <span class="filter-label">REPO AGE (years)</span>
+            <div class="range-values">
+              <span id="age-min-display">0</span><span>—</span
+              ><span id="age-max-display">max</span>
+            </div>
+            <div class="dual-range" id="age-range"></div>
+          </div>
+          <button class="btn-clear" id="btn-clear-filters">
+            ⟳ Reset Filters & Selection
+          </button>
         </div>
-      </div>
+      </aside>
 
-      <div class="filter-group">
-        <label class="filter-label">Idade do Repositório (Anos)</label>
-        <div class="range-display"><span id="age-min-display">0</span><span>–</span><span id="age-max-display">Max</span></div>
-        <div class="dual-range-wrapper">
-          <input type="range" id="age-min" class="range-input range-min" />
-          <input type="range" id="age-max" class="range-input range-max" />
-          <div class="range-track"><div class="range-fill" id="age-fill"></div></div>
+      <main class="content" id="main-content">
+        <div class="loading-overlay" id="loading-overlay">
+          <div class="spinner"></div>
+          <p style="margin-top: 16px">loading 200+ repositories...</p>
         </div>
-      </div>
 
-      <div class="filter-group">
-        <label class="filter-label">Tamanho (Total de Commits)</label>
-        <div class="range-display"><span id="commits-min-display">0</span><span>–</span><span id="commits-max-display">Max</span></div>
-        <div class="dual-range-wrapper">
-          <input type="range" id="commits-min" class="range-input range-min" />
-          <input type="range" id="commits-max" class="range-input range-max" />
-          <div class="range-track"><div class="range-fill" id="commits-fill"></div></div>
-        </div>
-      </div>
-
-      <div class="filter-group">
-        <label class="filter-label">Intensidade de Uso (Score IA)</label>
-        <div class="range-display"><span id="ai-min-display">0</span><span>–</span><span id="ai-max-display">Max</span></div>
-        <div class="dual-range-wrapper">
-          <input type="range" id="ai-min" class="range-input range-min" />
-          <input type="range" id="ai-max" class="range-input range-max" />
-          <div class="range-track"><div class="range-fill" id="ai-fill"></div></div>
-        </div>
-      </div>
-
-      <button class="btn-clear" id="btn-clear-filters">Restaurar Filtros</button>
-    </aside>
-
-    <main class="content" id="main-content">
-      <div class="loading-overlay" id="loading-overlay"><div class="spinner-ring"></div><p>Lendo base de dados...</p></div>
-
-      <section class="kpi-section">
+        <!-- KPI Section -->
         <div class="kpi-grid">
-          <div class="kpi-card"><div class="kpi-body"><span class="kpi-value" id="kpi-mttr-val">—</span><span class="kpi-label">Δ MTTR (Horas)</span></div></div>
-          <div class="kpi-card"><div class="kpi-body"><span class="kpi-value" id="kpi-verb-val">—</span><span class="kpi-label">Δ Verbosidade</span></div></div>
-          <div class="kpi-card"><div class="kpi-body"><span class="kpi-value" id="kpi-fix-val">—</span><span class="kpi-label">Δ Taxa de Correção (Fix)</span></div></div>
-          <div class="kpi-card"><div class="kpi-body"><span class="kpi-value" id="kpi-mi-val">—</span><span class="kpi-label">Δ Manutenibilidade (MI)</span></div></div>
+          <div class="kpi-tile">
+            <div class="kpi-value" id="kpi-mttr-val">—</div>
+            <div class="kpi-label">Δ MTTR (mean resolution)</div>
+          </div>
+          <div class="kpi-tile">
+            <div class="kpi-value" id="kpi-fix-val">—</div>
+            <div class="kpi-label">Δ Bug-fix ratio (%fix)</div>
+          </div>
+          <div class="kpi-tile">
+            <div class="kpi-value" id="kpi-mi-val">—</div>
+            <div class="kpi-label">Δ Maintainability Index (MI)</div>
+          </div>
+          <div class="kpi-tile">
+            <div class="kpi-value" id="kpi-cc-val">—</div>
+            <div class="kpi-label">Δ Cyclomatic Complexity (CC)</div>
+          </div>
         </div>
-      </section>
 
-      <section class="charts-section">
-        <div class="section-header"><div class="section-badge section-badge--q1">Q1</div><div><h2 class="section-title">Manutenção: MTTR e Fluxo de Issues</h2></div></div>
-        
-        <div class="charts-row">
-          <div class="chart-card">
-            <h3 class="chart-title">M1: Distribuição da Taxa de Abertura de Issues</h3>
-            <div class="chart-wrapper"><canvas id="chart-kde-issues"></canvas></div>
+        <!-- Q1: Issue flow & MTTR -->
+        <div class="chart-panel">
+          <div class="panel-header">
+            <div class="badge-q badge-q1">Q1 · MAINTENANCE</div>
+            <div class="panel-title">
+              Issue dynamics & resolution efficiency
+            </div>
           </div>
-          <div class="chart-card">
-            <h3 class="chart-title">Volume de Issues (Por Mês e Total)</h3>
-            <div class="chart-wrapper"><canvas id="chart-issues-violin"></canvas></div>
+          <div class="grid-2cols">
+            <div>
+              <div class="chart-container">
+                <canvas id="chart-kde-issues"></canvas>
+              </div>
+              <div class="chart-note">
+                KDE: Issue rate per month (outlier-filtered)
+              </div>
+            </div>
+            <div>
+              <div class="chart-container">
+                <canvas id="chart-mttr-box"></canvas>
+              </div>
+              <div class="chart-note">
+                MTTR (hours) · log scale · pre vs post
+              </div>
+            </div>
+          </div>
+          <div class="mt-4">
+            <div class="chart-container-lg">
+              <canvas id="chart-issues-violin"></canvas>
+            </div>
+            <div class="chart-note">
+              Issues/month + total issues distribution
+            </div>
           </div>
         </div>
-        <div class="chart-card mt-4">
-          <h3 class="chart-title">Tempo Médio de Resolução de Issues (Escala Log)</h3>
-          <div class="chart-wrapper chart-wrapper--medium"><canvas id="chart-mttr-box"></canvas></div>
-        </div>
-      </section>
 
-      <section class="charts-section">
-        <div class="section-header"><div class="section-badge section-badge--q2">Q2</div><div><h2 class="section-title">Estabilidade: Injeção de Bugs e Retrabalho</h2></div></div>
-        
-        <div class="charts-row">
-          <div class="chart-card">
-            <h3 class="chart-title">Proporção de Commits de Correção (% Fix)</h3>
-            <div class="chart-wrapper"><canvas id="chart-fix-violin"></canvas></div>
+        <!-- Q2: Stability -->
+        <div class="chart-panel">
+          <div class="panel-header">
+            <div class="badge-q badge-q2">Q2 · STABILITY</div>
+            <div class="panel-title">Bug injection & rework patterns</div>
           </div>
-          <div class="chart-card">
-            <h3 class="chart-title">Proporção de Commits de Reversão (% Revert)</h3>
-            <div class="chart-wrapper"><canvas id="chart-revert-violin"></canvas></div>
+          <div class="grid-2cols">
+            <div>
+              <div class="chart-container">
+                <canvas id="chart-fix-violin"></canvas>
+              </div>
+              <div class="chart-note">
+                Percentage of commits that are bug fixes (%Fix)
+              </div>
+            </div>
+            <div>
+              <div class="chart-container">
+                <canvas id="chart-revert-violin"></canvas>
+              </div>
+              <div class="chart-note">
+                Percentage of revert commits (%Revert)
+              </div>
+            </div>
           </div>
         </div>
-        <div class="chart-card mt-4">
-          <h3 class="chart-title">Total de Commits</h3>
-          <div class="chart-wrapper chart-wrapper--medium"><canvas id="chart-total-commits-violin"></canvas></div>
-        </div>
-      </section>
 
-      <section class="charts-section">
-        <div class="section-header"><div class="section-badge section-badge--q3">Q3</div><div><h2 class="section-title">Manutenibilidade Estrutural (MI, CC e Verbosidade)</h2></div></div>
-        
-        <div class="charts-row">
-          <div class="chart-card">
-            <h3 class="chart-title">Verbosidade: Linhas Alteradas por Commit</h3>
-            <div class="chart-wrapper"><canvas id="chart-verb-violin"></canvas></div>
+        <!-- Q3: Structural maintainability -->
+        <div class="chart-panel">
+          <div class="panel-header">
+            <div class="badge-q badge-q3">Q3 · STRUCTURAL QUALITY</div>
+            <div class="panel-title">
+              Maintainability Index & Cyclomatic Complexity
+            </div>
           </div>
-          <div class="chart-card">
-            <h3 class="chart-title">M2: Distribuição da Complexidade Ciclomática</h3>
-            <div class="chart-wrapper"><canvas id="chart-kde-cc"></canvas></div>
+          <div class="grid-2cols">
+            <div>
+              <div class="chart-container">
+                <canvas id="chart-mi-violin"></canvas>
+              </div>
+              <div class="chart-note">
+                MI average & median (higher = better)
+              </div>
+            </div>
+            <div>
+              <div class="chart-container">
+                <canvas id="chart-cc-violin"></canvas>
+              </div>
+              <div class="chart-note">
+                Cyclomatic Complexity mean/median (lower = better)
+              </div>
+            </div>
+          </div>
+          <div class="mt-4">
+            <div class="chart-container-lg">
+              <canvas id="chart-verb-violin"></canvas>
+            </div>
+            <div class="chart-note">Verbosity: lines changed per commit</div>
           </div>
         </div>
-        
-        <div class="charts-row mt-4">
-          <div class="chart-card">
-            <h3 class="chart-title">Complexidade Ciclomática (Média e Mediana)</h3>
-            <div class="chart-wrapper"><canvas id="chart-cc-violin"></canvas></div>
-          </div>
-          <div class="chart-card">
-            <h3 class="chart-title">Maintainability Index (Média e Mediana)</h3>
-            <div class="chart-wrapper"><canvas id="chart-mi-violin"></canvas></div>
-          </div>
-        </div>
-      </section>
 
-      <section class="charts-section">
-        <div class="section-header"><div><h2 class="section-title">Síntese do Impacto Global</h2><p class="section-subtitle">Mudança percentual média (Pós vs Pré-IA)</p></div></div>
-        <div class="chart-card chart-card--wide">
-          <div class="chart-wrapper chart-wrapper--large"><canvas id="chart-sintese"></canvas></div>
+        <!-- Synthesis bar chart -->
+        <div class="chart-panel">
+          <div class="panel-header">
+            <div class="badge-q" style="background: #e0e7ff">
+              IMPACT SYNTHESIS
+            </div>
+            <div class="panel-title">Percent change after AI adoption</div>
+          </div>
+          <div class="chart-container" style="height: 420px">
+            <canvas id="chart-sintese"></canvas>
+          </div>
         </div>
-      </section>
+      </main>
+    </div>
 
-    </main>
-  </div>
-  <script src="app.js"></script>
-</body>
+    <script>
+      // ----------------------------- GLOBAL STATE ---------------------------------
+      const CSV_PATH = "analise_impacto_ia.csv";
+      let fullData = [];
+      let filteredData = [];
+      let selectedReposSet = new Set();
+      let charts = {};
+      let outlierEnabled = false;
+
+      const CORES = {
+        pre: "#3b82f6",
+        pos: "#ef4444",
+        preBg: "rgba(59, 130, 246, 0.7)",
+        posBg: "rgba(239, 68, 68, 0.7)",
+        green: "#10B981",
+        red: "#EF4444",
+      };
+      let filters = { starsMin: 0, starsMax: 0, ageMin: 0, ageMax: 0 };
+      let limits = { starsMax: 0, ageMax: 0 };
+
+      let allRepoNames = [];
+      let repoSearchTerm = "";
+
+      function num(v) {
+        let n = parseFloat(v);
+        return isNaN(n) ? 0 : n;
+      }
+
+      // IQR Outlier removal
+      function removeOutliersIQR(arr) {
+        if (!arr.length) return [];
+        const sorted = [...arr].sort((a, b) => a - b);
+        const q1 = sorted[Math.floor(sorted.length * 0.25)];
+        const q3 = sorted[Math.floor(sorted.length * 0.75)];
+        const iqr = q3 - q1;
+        const lowerBound = q1 - 1.5 * iqr;
+        const upperBound = q3 + 1.5 * iqr;
+        return arr.filter((v) => v >= lowerBound && v <= upperBound);
+      }
+
+      function extractArr(data, col, applyOutlierFilter = true) {
+        let raw = data.map((r) => num(r[col])).filter((v) => !isNaN(v));
+        if (
+          applyOutlierFilter &&
+          outlierEnabled &&
+          !col.includes("percent") &&
+          !col.includes("revert")
+        ) {
+          return removeOutliersIQR(raw);
+        }
+        return raw;
+      }
+
+      function mean(arr) {
+        return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+      }
+      function median(arr) {
+        if (!arr.length) return 0;
+        const s = [...arr].sort((a, b) => a - b);
+        const m = Math.floor(s.length / 2);
+        return s.length % 2 === 0 ? (s[m - 1] + s[m]) / 2 : s[m];
+      }
+
+      function computeDelta(preCol, posCol) {
+        let preVals = extractArr(filteredData, preCol, true),
+          posVals = extractArr(filteredData, posCol, true);
+        let preM = mean(preVals),
+          posM = mean(posVals);
+        if (preM === 0) return 0;
+        return ((posM - preM) / preM) * 100;
+      }
+
+      function destroyChart(id) {
+        if (charts[id]) {
+          charts[id].destroy();
+          delete charts[id];
+        }
+      }
+
+      function renderViolin(id, categories, yTitle, isBoxplotFallback = false) {
+        destroyChart(id);
+        const ctx = document.getElementById(id).getContext("2d");
+        const jitter = (arr) =>
+          arr.map((v) => v + (Math.random() - 0.5) * 0.08);
+        const labels = categories.map((c) => c.label);
+        const datasets = [
+          {
+            label: "Distribution",
+            data: categories.map((c) =>
+              isBoxplotFallback ? c.data : c.data.length ? jitter(c.data) : [0],
+            ),
+            backgroundColor: categories.map((c) =>
+              c.type === "pre" ? CORES.preBg : CORES.posBg,
+            ),
+            borderColor: "#475569",
+            borderWidth: 1.2,
+            outlierRadius: 1.8,
+            itemRadius: 0,
+            order: 1,
+          },
+        ];
+        if (!isBoxplotFallback) {
+          const means = categories.map((c) => ({
+            x: c.label,
+            y: mean(c.data),
+          }));
+          datasets.push({
+            type: "scatter",
+            label: "Mean (diamond)",
+            data: means,
+            pointStyle: "rectRot",
+            pointRadius: 6,
+            pointBackgroundColor: "#000000",
+            pointBorderColor: "#000000",
+            backgroundColor: "black",
+            order: 0,
+            showLine: false,
+          });
+        }
+        charts[id] = new Chart(ctx, {
+          type: isBoxplotFallback ? "boxplot" : "violin",
+          data: { labels, datasets },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: { y: { title: { display: true, text: yTitle } } },
+            plugins: {
+              legend: {
+                position: "top",
+                labels: {
+                  generateLabels: (c) => {
+                    let items = [];
+                    if (c.data.datasets[0])
+                      items.push(
+                        { text: "Pre-AI", fillStyle: CORES.preBg },
+                        { text: "Post-AI", fillStyle: CORES.posBg },
+                      );
+                    if (!isBoxplotFallback && c.data.datasets[1])
+                      items.push({
+                        text: "Mean",
+                        fillStyle: "black",
+                        pointStyle: "rectRot",
+                      });
+                    return items;
+                  },
+                },
+              },
+            },
+          },
+        });
+      }
+
+      function renderKDE(id, preArr, posArr, xLabel) {
+        destroyChart(id);
+        function kdePoints(arr, points = 100) {
+          if (arr.length === 0) return [];
+          const min = Math.min(...arr),
+            max = Math.max(...arr);
+          const m = mean(arr),
+            variance =
+              arr.reduce((a, b) => a + Math.pow(b - m, 2), 0) / arr.length;
+          const std = Math.sqrt(variance);
+          const bw = 1.06 * std * Math.pow(arr.length, -0.2) || 0.3;
+          const step = (max - min) / points;
+          const xs = Array.from({ length: points }, (_, i) => min + i * step);
+          const kernel = (x) => Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI);
+          return xs.map((x) => ({
+            x,
+            y:
+              arr.reduce((acc, v) => acc + kernel((x - v) / bw), 0) /
+              (arr.length * bw),
+          }));
+        }
+        const kdePre = kdePoints(preArr),
+          kdePos = kdePoints(posArr);
+        charts[id] = new Chart(document.getElementById(id).getContext("2d"), {
+          type: "scatter",
+          data: {
+            datasets: [
+              {
+                type: "line",
+                label: `Pre-AI (median: ${median(preArr).toFixed(1)})`,
+                data: kdePre,
+                borderColor: CORES.pre,
+                backgroundColor: "rgba(59,130,246,0.2)",
+                fill: true,
+                tension: 0.3,
+                pointRadius: 0,
+              },
+              {
+                type: "line",
+                label: `Post-AI (median: ${median(posArr).toFixed(1)})`,
+                data: kdePos,
+                borderColor: CORES.pos,
+                backgroundColor: "rgba(239,68,68,0.2)",
+                fill: true,
+                tension: 0.3,
+                pointRadius: 0,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+              x: { title: { display: true, text: xLabel } },
+              y: {
+                title: { display: true, text: "Density" },
+                beginAtZero: true,
+              },
+            },
+            plugins: { legend: { position: "top" } },
+          },
+        });
+      }
+
+      function updateKPIs() {
+        const mttrPre = mean(
+            extractArr(filteredData, "pre_avg_resolution_hours", true),
+          ),
+          mttrPost = mean(
+            extractArr(filteredData, "pos_avg_resolution_hours", true),
+          );
+        const fixPre = mean(extractArr(filteredData, "pre_fix_percent", true)),
+          fixPost = mean(extractArr(filteredData, "pos_fix_percent", true));
+        const miPre = mean(extractArr(filteredData, "pre_avg_mi", true)),
+          miPost = mean(extractArr(filteredData, "pos_avg_mi", true));
+        const ccPre = mean(extractArr(filteredData, "pre_avg_cc", true)),
+          ccPost = mean(extractArr(filteredData, "pos_avg_cc", true));
+        const delta = (pre, post) =>
+          pre ? `${(((post - pre) / pre) * 100).toFixed(1)}%` : "—";
+        document.getElementById("kpi-mttr-val").innerHTML = delta(
+          mttrPre,
+          mttrPost,
+        );
+        document.getElementById("kpi-fix-val").innerHTML = delta(
+          fixPre,
+          fixPost,
+        );
+        document.getElementById("kpi-mi-val").innerHTML = delta(miPre, miPost);
+        document.getElementById("kpi-cc-val").innerHTML = delta(ccPre, ccPost);
+      }
+
+      function renderAllCharts() {
+        const d = filteredData;
+        renderKDE(
+          "chart-kde-issues",
+          extractArr(d, "pre_issue_rate_per_month", true),
+          extractArr(d, "pos_issue_rate_per_month", true),
+          "Issues / month",
+        );
+        destroyChart("chart-mttr-box");
+        const ctxMttr = document
+          .getElementById("chart-mttr-box")
+          .getContext("2d");
+        charts["chart-mttr-box"] = new Chart(ctxMttr, {
+          type: "boxplot",
+          data: {
+            labels: ["MTTR (hours)"],
+            datasets: [
+              {
+                label: "Pre-AI",
+                data: [extractArr(d, "pre_avg_resolution_hours", true)],
+                backgroundColor: CORES.preBg,
+                borderColor: "#475569",
+              },
+              {
+                label: "Post-AI",
+                data: [extractArr(d, "pos_avg_resolution_hours", true)],
+                backgroundColor: CORES.posBg,
+                borderColor: "#475569",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+              y: {
+                type: "logarithmic",
+                title: { display: true, text: "Hours (log)" },
+              },
+            },
+          },
+        });
+        renderViolin(
+          "chart-issues-violin",
+          [
+            {
+              label: "Issues/month (pre)",
+              data: extractArr(d, "pre_issue_rate_per_month", true),
+              type: "pre",
+            },
+            {
+              label: "Issues/month (post)",
+              data: extractArr(d, "pos_issue_rate_per_month", true),
+              type: "pos",
+            },
+            {
+              label: "Total issues (pre)",
+              data: extractArr(d, "pre_issues", true),
+              type: "pre",
+            },
+            {
+              label: "Total issues (post)",
+              data: extractArr(d, "pos_issues", true),
+              type: "pos",
+            },
+          ],
+          "Count",
+        );
+        renderViolin(
+          "chart-fix-violin",
+          [
+            {
+              label: "% Fix (pre)",
+              data: extractArr(d, "pre_fix_percent", true),
+              type: "pre",
+            },
+            {
+              label: "% Fix (post)",
+              data: extractArr(d, "pos_fix_percent", true),
+              type: "pos",
+            },
+          ],
+          "% Fix",
+        );
+        renderViolin(
+          "chart-revert-violin",
+          [
+            {
+              label: "% Revert (pre)",
+              data: extractArr(d, "pre_revert_percent", true),
+              type: "pre",
+            },
+            {
+              label: "% Revert (post)",
+              data: extractArr(d, "pos_revert_percent", true),
+              type: "pos",
+            },
+          ],
+          "% Revert",
+        );
+        renderViolin(
+          "chart-mi-violin",
+          [
+            {
+              label: "MI avg (pre)",
+              data: extractArr(d, "pre_avg_mi", true),
+              type: "pre",
+            },
+            {
+              label: "MI avg (post)",
+              data: extractArr(d, "pos_avg_mi", true),
+              type: "pos",
+            },
+            {
+              label: "MI median (pre)",
+              data: extractArr(d, "pre_median_mi", true),
+              type: "pre",
+            },
+            {
+              label: "MI median (post)",
+              data: extractArr(d, "pos_median_mi", true),
+              type: "pos",
+            },
+          ],
+          "Maintainability Index",
+        );
+        renderViolin(
+          "chart-cc-violin",
+          [
+            {
+              label: "CC avg (pre)",
+              data: extractArr(d, "pre_avg_cc", true),
+              type: "pre",
+            },
+            {
+              label: "CC avg (post)",
+              data: extractArr(d, "pos_avg_cc", true),
+              type: "pos",
+            },
+            {
+              label: "CC median (pre)",
+              data: extractArr(d, "pre_median_cc", true),
+              type: "pre",
+            },
+            {
+              label: "CC median (post)",
+              data: extractArr(d, "pos_median_cc", true),
+              type: "pos",
+            },
+          ],
+          "Cyclomatic Complexity",
+        );
+        renderViolin(
+          "chart-verb-violin",
+          [
+            {
+              label: "Lines/commit (pre)",
+              data: extractArr(d, "pre_avg_lines_changed", true),
+              type: "pre",
+            },
+            {
+              label: "Lines/commit (post)",
+              data: extractArr(d, "pos_avg_lines_changed", true),
+              type: "pos",
+            },
+          ],
+          "Lines changed",
+        );
+
+        destroyChart("chart-sintese");
+        const labels = [
+          "MTTR",
+          "Issues/mo",
+          "%Fix",
+          "%Revert",
+          "Lines/commit",
+          "MI",
+          "CC",
+        ];
+        const values = [
+          computeDelta("pre_avg_resolution_hours", "pos_avg_resolution_hours"),
+          computeDelta("pre_issue_rate_per_month", "pos_issue_rate_per_month"),
+          computeDelta("pre_fix_percent", "pos_fix_percent"),
+          computeDelta("pre_revert_percent", "pos_revert_percent"),
+          computeDelta("pre_avg_lines_changed", "pos_avg_lines_changed"),
+          computeDelta("pre_avg_mi", "pos_avg_mi"),
+          computeDelta("pre_avg_cc", "pos_avg_cc"),
+        ];
+        charts["chart-sintese"] = new Chart(
+          document.getElementById("chart-sintese").getContext("2d"),
+          {
+            type: "bar",
+            data: {
+              labels,
+              datasets: [
+                {
+                  label: "Relative change (%)",
+                  data: values,
+                  backgroundColor: values.map((v) =>
+                    v > 0 ? CORES.green : CORES.red,
+                  ),
+                  borderRadius: 6,
+                },
+              ],
+            },
+            options: {
+              indexAxis: "y",
+              responsive: true,
+              maintainAspectRatio: true,
+              plugins: {
+                tooltip: {
+                  callbacks: {
+                    label: (c) =>
+                      `${c.parsed.x > 0 ? "+" : ""}${c.parsed.x.toFixed(1)}%`,
+                  },
+                },
+                legend: { display: false },
+              },
+              scales: {
+                x: { title: { display: true, text: "Variation (%)" } },
+              },
+            },
+          },
+        );
+        updateKPIs();
+        document.getElementById("total-repos-header").innerText = d.length;
+      }
+
+      function applyFiltersAndSelection() {
+        // combine star/age filters with selected repositories
+        filteredData = fullData.filter((r) => {
+          const stars = num(r.stars),
+            age = num(r.age_years);
+          const repoMatch =
+            selectedReposSet.size === 0 || selectedReposSet.has(r.repository);
+          return (
+            stars >= filters.starsMin &&
+            stars <= filters.starsMax &&
+            age >= filters.ageMin &&
+            age <= filters.ageMax &&
+            repoMatch
+          );
+        });
+        renderAllCharts();
+        document.getElementById("selected-count-display").innerHTML =
+          `${selectedReposSet.size} / ${allRepoNames.length} repositories selected`;
+      }
+
+      // Render repository list with search
+      function renderRepoList() {
+        const container = document.getElementById("repo-list-container");
+        const searchLower = repoSearchTerm.toLowerCase();
+        const filteredRepos = allRepoNames.filter((name) =>
+          name.toLowerCase().includes(searchLower),
+        );
+        if (filteredRepos.length === 0) {
+          container.innerHTML =
+            '<div style="color:#64748b; text-align:center; padding:20px;">No repositories match</div>';
+          return;
+        }
+        container.innerHTML = filteredRepos
+          .map(
+            (repo) => `
+      <div class="repo-item ${selectedReposSet.has(repo) ? "selected" : ""}" data-repo="${repo.replace(/"/g, "&quot;")}">
+        <input type="checkbox" class="repo-check" ${selectedReposSet.has(repo) ? "checked" : ""}>
+        <span class="repo-name">${repo}</span>
+      </div>
+    `,
+          )
+          .join("");
+        document.querySelectorAll(".repo-item").forEach((el) => {
+          const repoName = el.getAttribute("data-repo");
+          const chk = el.querySelector(".repo-check");
+          const update = () => {
+            if (chk.checked) selectedReposSet.add(repoName);
+            else selectedReposSet.delete(repoName);
+            if (chk.checked) el.classList.add("selected");
+            else el.classList.remove("selected");
+            applyFiltersAndSelection();
+          };
+          el.addEventListener("click", (e) => {
+            if (e.target.tagName !== "INPUT") {
+              chk.checked = !chk.checked;
+              update();
+            }
+          });
+          chk.addEventListener("change", update);
+        });
+      }
+
+      function updateRepoSearch() {
+        repoSearchTerm = document.getElementById("repo-search").value;
+        renderRepoList();
+      }
+
+      function setOutlierMode(enable) {
+        outlierEnabled = enable;
+        const track = document.getElementById("toggle-track");
+        if (enable) track.classList.add("active");
+        else track.classList.remove("active");
+        applyFiltersAndSelection();
+      }
+
+      // ---- FILTER LOGIC + RANGE WIDGETS ----
+      function buildRangeWidget(
+        containerId,
+        minId,
+        maxId,
+        fillId,
+        minDisplay,
+        maxDisplay,
+        minVal,
+        maxVal,
+        limitsMax,
+        onUpdate,
+      ) {
+        const wrapper = document.getElementById(containerId);
+        wrapper.innerHTML = `
+      <div class="slider-track"></div>
+      <div class="slider-fill" id="${fillId}"></div>
+      <input type="range" id="${minId}" class="range-min" min="0" max="${limitsMax}" value="${minVal}" step="1">
+      <input type="range" id="${maxId}" class="range-max" min="0" max="${limitsMax}" value="${maxVal}" step="1">
+    `;
+        const minInput = document.getElementById(minId),
+          maxInput = document.getElementById(maxId);
+        const fillDiv = document.getElementById(fillId);
+        const updateFill = () => {
+          let minV = parseInt(minInput.value),
+            maxV = parseInt(maxInput.value);
+          if (minV > maxV) {
+            minV = maxV;
+            minInput.value = minV;
+          }
+          const percentLeft = (minV / limitsMax) * 100;
+          const percentWidth = ((maxV - minV) / limitsMax) * 100;
+          fillDiv.style.left = `${percentLeft}%`;
+          fillDiv.style.width = `${percentWidth}%`;
+          document.getElementById(minDisplay).innerText =
+            minV >= 1000 ? (minV / 1000).toFixed(1) + "k" : minV;
+          document.getElementById(maxDisplay).innerText =
+            maxV >= 1000 ? (maxV / 1000).toFixed(1) + "k" : maxV;
+          onUpdate({ min: minV, max: maxV });
+        };
+        minInput.addEventListener("input", () => {
+          let m = parseInt(minInput.value),
+            M = parseInt(maxInput.value);
+          if (m > M) minInput.value = M;
+          updateFill();
+        });
+        maxInput.addEventListener("input", () => {
+          let m = parseInt(minInput.value),
+            M = parseInt(maxInput.value);
+          if (M < m) maxInput.value = m;
+          updateFill();
+        });
+        updateFill();
+      }
+
+      function initFiltersAndEvents() {
+        limits.starsMax = Math.ceil(
+          Math.max(...fullData.map((r) => num(r.stars))),
+        );
+        limits.ageMax = Math.ceil(
+          Math.max(...fullData.map((r) => num(r.age_years))),
+        );
+        filters = {
+          starsMin: 0,
+          starsMax: limits.starsMax,
+          ageMin: 0,
+          ageMax: limits.ageMax,
+        };
+        buildRangeWidget(
+          "stars-range",
+          "stars-min-input",
+          "stars-max-input",
+          "stars-fill",
+          "stars-min-display",
+          "stars-max-display",
+          0,
+          limits.starsMax,
+          limits.starsMax,
+          (v) => {
+            filters.starsMin = v.min;
+            filters.starsMax = v.max;
+            applyFiltersAndSelection();
+          },
+        );
+        buildRangeWidget(
+          "age-range",
+          "age-min-input",
+          "age-max-input",
+          "age-fill",
+          "age-min-display",
+          "age-max-display",
+          0,
+          limits.ageMax,
+          limits.ageMax,
+          (v) => {
+            filters.ageMin = v.min;
+            filters.ageMax = v.max;
+            applyFiltersAndSelection();
+          },
+        );
+
+        document
+          .getElementById("btn-clear-filters")
+          .addEventListener("click", () => {
+            filters = {
+              starsMin: 0,
+              starsMax: limits.starsMax,
+              ageMin: 0,
+              ageMax: limits.ageMax,
+            };
+            document.getElementById("stars-min-input").value = 0;
+            document.getElementById("stars-max-input").value = limits.starsMax;
+            document.getElementById("age-min-input").value = 0;
+            document.getElementById("age-max-input").value = limits.ageMax;
+            ["stars", "age"].forEach((t) => {
+              const ev = new Event("input");
+              document.getElementById(`${t}-min-input`)?.dispatchEvent(ev);
+              document.getElementById(`${t}-max-input`)?.dispatchEvent(ev);
+            });
+            selectedReposSet.clear();
+            renderRepoList();
+            applyFiltersAndSelection();
+          });
+
+        document
+          .getElementById("outlier-toggle")
+          .addEventListener("click", () => {
+            setOutlierMode(!outlierEnabled);
+          });
+        document
+          .getElementById("select-all-btn")
+          .addEventListener("click", () => {
+            allRepoNames.forEach((r) => selectedReposSet.add(r));
+            renderRepoList();
+            applyFiltersAndSelection();
+          });
+        document
+          .getElementById("clear-all-btn")
+          .addEventListener("click", () => {
+            selectedReposSet.clear();
+            renderRepoList();
+            applyFiltersAndSelection();
+          });
+        document
+          .getElementById("repo-search")
+          .addEventListener("input", updateRepoSearch);
+
+        applyFiltersAndSelection();
+      }
+
+      function loadCSV() {
+        Papa.parse(CSV_PATH, {
+          download: true,
+          header: true,
+          dynamicTyping: true,
+          complete: (res) => {
+            fullData = res.data.filter(
+              (r) => r.repository && r.repository.trim() !== "",
+            );
+            allRepoNames = [
+              ...new Set(fullData.map((r) => r.repository).sort()),
+            ];
+            selectedReposSet.clear();
+            renderRepoList();
+            document.getElementById("loading-overlay").classList.add("hidden");
+            document.getElementById("status-label").innerHTML =
+              "Ready · Select repos";
+            document.querySelector(".dot").style.background = "#10b981";
+            initFiltersAndEvents();
+          },
+          error: (err) => {
+            console.error(err);
+            document.getElementById("status-label").innerHTML = "error loading";
+          },
+        });
+      }
+      document.addEventListener("DOMContentLoaded", loadCSV);
+    </script>
+  </body>
 </html>
