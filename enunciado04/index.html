@@ -16,500 +16,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@sgratzl/chartjs-chart-boxplot@4.4.3/build/index.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
+    <link rel="stylesheet" href="style.css">
 
-      :root {
-        --bg-page: #f1f5f9;
-        --bg-card: #ffffff;
-        --sidebar-bg: #0b1120;
-        --header-bg: #030614;
-        --accent-blue: #3b82f6;
-        --accent-blue-light: #60a5fa;
-        --accent-red: #ef4444;
-        --accent-green: #10b981;
-        --accent-purple: #8b5cf6;
-        --text-dark: #0f172a;
-        --text-muted: #475569;
-        --border-light: #e2e8f0;
-        --sidebar-width: 320px;
-        --header-height: 72px;
-      }
-
-      body {
-        font-family: "Inter", sans-serif;
-        background: var(--bg-page);
-        color: var(--text-dark);
-      }
-
-      /* Header */
-      .app-header {
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        height: var(--header-height);
-        background: var(--header-bg);
-        backdrop-filter: blur(2px);
-        display: flex;
-        align-items: center;
-        padding: 0 28px;
-        border-bottom: 1px solid #1e293b;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-      }
-      .header-inner {
-        display: flex;
-        justify-content: space-between;
-        width: 100%;
-        align-items: center;
-      }
-      .brand {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-      }
-      .brand-icon svg {
-        width: 32px;
-        color: var(--accent-blue);
-      }
-      .brand-text h1 {
-        font-family: "Space Grotesk", monospace;
-        font-size: 1.3rem;
-        font-weight: 600;
-        letter-spacing: -0.3px;
-        color: white;
-      }
-      .brand-text p {
-        font-size: 0.75rem;
-        color: #94a3b8;
-      }
-      .header-stats {
-        display: flex;
-        gap: 20px;
-        align-items: center;
-      }
-      .stat-badge {
-        background: rgba(255, 255, 255, 0.08);
-        padding: 6px 14px;
-        border-radius: 40px;
-        text-align: center;
-      }
-      .stat-badge .num {
-        font-weight: 800;
-        font-size: 1rem;
-        color: white;
-      }
-      .stat-badge .label {
-        font-size: 0.7rem;
-        color: #94a3b8;
-        margin-left: 6px;
-      }
-      .status-dot {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 0.8rem;
-        color: #cbd5e1;
-      }
-      .dot {
-        width: 10px;
-        height: 10px;
-        background: #facc15;
-        border-radius: 50%;
-        animation: pulse 1.2s infinite;
-      }
-      @keyframes pulse {
-        0% {
-          opacity: 0.4;
-        }
-        100% {
-          opacity: 1;
-          transform: scale(1.1);
-        }
-      }
-
-      /* Layout */
-      .app-layout {
-        display: flex;
-        min-height: calc(100vh - var(--header-height));
-      }
-      .sidebar {
-        width: var(--sidebar-width);
-        background: var(--sidebar-bg);
-        position: fixed;
-        height: calc(100vh - var(--header-height));
-        overflow-y: auto;
-        padding: 28px 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 24px;
-        border-right: 1px solid #1e293b;
-      }
-      .sidebar-title {
-        font-family: "Space Grotesk", monospace;
-        font-weight: 600;
-        font-size: 0.9rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: #94a3b8;
-        margin-bottom: 18px;
-        border-bottom: 1px solid #334155;
-        padding-bottom: 10px;
-      }
-      .filter-group {
-        margin-bottom: 12px;
-      }
-      .filter-label {
-        font-size: 0.7rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        color: #9ca3af;
-        margin-bottom: 8px;
-        display: block;
-      }
-      .range-values {
-        display: flex;
-        justify-content: space-between;
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: white;
-        margin-bottom: 8px;
-      }
-      .dual-range {
-        position: relative;
-        height: 28px;
-        margin-top: 6px;
-      }
-      .slider-track {
-        position: absolute;
-        top: 12px;
-        width: 100%;
-        height: 4px;
-        background: #334155;
-        border-radius: 4px;
-      }
-      .slider-fill {
-        position: absolute;
-        height: 4px;
-        background: var(--accent-blue);
-        border-radius: 4px;
-        top: 12px;
-      }
-      input[type="range"] {
-        position: absolute;
-        width: 100%;
-        background: transparent;
-        pointer-events: none;
-        -webkit-appearance: none;
-        top: 8px;
-      }
-      input[type="range"]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        width: 16px;
-        height: 16px;
-        background: white;
-        border-radius: 50%;
-        pointer-events: auto;
-        cursor: pointer;
-        border: 2px solid var(--accent-blue);
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-      }
-      .toggle-switch {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: #1e293b;
-        padding: 12px 16px;
-        border-radius: 14px;
-        margin-top: 8px;
-        cursor: pointer;
-        transition: 0.2s;
-      }
-      .toggle-switch:hover {
-        background: #2d3a4f;
-      }
-      .toggle-label {
-        font-size: 0.8rem;
-        font-weight: 500;
-        color: #e2e8f0;
-      }
-      .toggle-track {
-        width: 44px;
-        height: 24px;
-        background: #475569;
-        border-radius: 40px;
-        position: relative;
-        transition: 0.2s;
-      }
-      .toggle-track.active {
-        background: var(--accent-blue);
-      }
-      .toggle-thumb {
-        width: 20px;
-        height: 20px;
-        background: white;
-        border-radius: 50%;
-        position: absolute;
-        top: 2px;
-        left: 3px;
-        transition: 0.2s;
-      }
-      .toggle-track.active .toggle-thumb {
-        left: 21px;
-      }
-      .btn-clear {
-        background: transparent;
-        border: 1px solid #334155;
-        color: #cbd5e6;
-        padding: 10px;
-        border-radius: 10px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: 0.2s;
-        margin-top: 12px;
-      }
-      .btn-clear:hover {
-        background: #1e293b;
-        color: white;
-        border-color: var(--accent-blue);
-      }
-      .info-note {
-        font-size: 0.65rem;
-        color: #64748b;
-        text-align: center;
-        margin-top: 20px;
-      }
-
-      /* Repository selector styles */
-      .repo-search-area {
-        background: #1e293b;
-        border-radius: 14px;
-        padding: 12px;
-        margin-bottom: 8px;
-      }
-      .repo-search-input {
-        width: 100%;
-        background: #0f172a;
-        border: 1px solid #334155;
-        padding: 10px 12px;
-        border-radius: 10px;
-        color: white;
-        font-size: 0.8rem;
-        outline: none;
-        transition: 0.2s;
-      }
-      .repo-search-input:focus {
-        border-color: var(--accent-blue);
-      }
-      .repo-list {
-        max-height: 260px;
-        overflow-y: auto;
-        margin-top: 12px;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-      }
-      .repo-item {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 8px 10px;
-        background: #0f172a;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: 0.1s;
-        font-size: 0.75rem;
-        color: #cbd5e6;
-        border: 1px solid transparent;
-      }
-      .repo-item:hover {
-        background: #2d3a4f;
-      }
-      .repo-item.selected {
-        background: var(--accent-blue);
-        color: white;
-        border-color: #60a5fa;
-      }
-      .repo-item input {
-        pointer-events: none;
-      }
-      .repo-check {
-        width: 16px;
-        height: 16px;
-        accent-color: var(--accent-blue);
-      }
-      .repo-name {
-        flex: 1;
-        font-family: monospace;
-        font-size: 0.7rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .selection-actions {
-        display: flex;
-        gap: 8px;
-        margin-top: 10px;
-      }
-      .btn-small {
-        flex: 1;
-        background: #334155;
-        border: none;
-        padding: 6px;
-        border-radius: 8px;
-        color: white;
-        font-size: 0.7rem;
-        cursor: pointer;
-        font-weight: 500;
-      }
-      .btn-small:hover {
-        background: #475569;
-      }
-      .selected-count {
-        font-size: 0.7rem;
-        color: #94a3b8;
-        margin-top: 8px;
-        text-align: center;
-      }
-
-      /* Main content */
-      .content {
-        margin-left: var(--sidebar-width);
-        padding: 32px 36px;
-        flex: 1;
-        max-width: 1600px;
-      }
-      .loading-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(3, 6, 20, 0.92);
-        z-index: 200;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        color: white;
-      }
-      .loading-overlay.hidden {
-        display: none;
-      }
-      .spinner {
-        width: 48px;
-        height: 48px;
-        border: 4px solid #334155;
-        border-top-color: var(--accent-blue);
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
-      }
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
-
-      /* KPI */
-      .kpi-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 24px;
-        margin-bottom: 40px;
-      }
-      .kpi-tile {
-        background: var(--bg-card);
-        border-radius: 24px;
-        padding: 20px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-        border: 1px solid var(--border-light);
-      }
-      .kpi-value {
-        font-family: "Space Grotesk", monospace;
-        font-size: 2.2rem;
-        font-weight: 800;
-        color: var(--accent-blue);
-      }
-      .kpi-label {
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        color: var(--text-muted);
-        letter-spacing: 0.5px;
-      }
-      .chart-panel {
-        background: var(--bg-card);
-        border-radius: 28px;
-        padding: 28px;
-        margin-bottom: 40px;
-        border: 1px solid var(--border-light);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.02);
-      }
-      .panel-header {
-        display: flex;
-        align-items: baseline;
-        gap: 12px;
-        margin-bottom: 28px;
-        flex-wrap: wrap;
-      }
-      .badge-q {
-        padding: 6px 14px;
-        border-radius: 40px;
-        font-weight: 800;
-        font-size: 0.75rem;
-        font-family: monospace;
-      }
-      .badge-q1 {
-        background: #dbeafe;
-        color: #1e40af;
-      }
-      .badge-q2 {
-        background: #fef3c7;
-        color: #92400e;
-      }
-      .badge-q3 {
-        background: #d1fae5;
-        color: #065f46;
-      }
-      .panel-title {
-        font-size: 1.4rem;
-        font-weight: 700;
-        letter-spacing: -0.3px;
-      }
-      .grid-2cols {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 28px;
-      }
-      .chart-container {
-        height: 360px;
-        width: 100%;
-        position: relative;
-      }
-      .chart-container-lg {
-        height: 420px;
-      }
-      .mt-4 {
-        margin-top: 32px;
-      }
-      .chart-note {
-        text-align: center;
-        font-size: 0.7rem;
-        color: #6c757d;
-        margin-top: 8px;
-      }
-      @media (max-width: 1000px) {
-        .grid-2cols {
-          grid-template-columns: 1fr;
-        }
-        .content {
-          padding: 20px;
-        }
-        .kpi-grid {
-          gap: 12px;
-        }
-      }
-    </style>
   </head>
   <body>
     <header class="app-header">
@@ -529,18 +37,21 @@
           </div>
           <div class="brand-text">
             <h1>AI MAINTENABILITY IMPACT</h1>
-            <p>Select repositories · Outlier-aware analytics</p>
           </div>
         </div>
+
+        <!-- QUICK NAVIGATION BUTTONS -->
+        <div class="nav-buttons" id="nav-buttons">
+          <button class="nav-btn" data-section="q1">Q1 · Maintenance</button>
+          <button class="nav-btn" data-section="q2">Q2 · Stability</button>
+          <button class="nav-btn" data-section="q3">Q3 · Structure</button>
+          <button class="nav-btn" data-section="synthesis">Impact Synthesis</button>
+        </div>
+
         <div class="header-stats">
           <div class="stat-badge">
             <span class="num" id="total-repos-header">—</span
-            ><span class="label">selected repos</span>
-          </div>
-          <div class="status-dot">
-            <span class="dot"></span
-            ><span id="status-label">loading dataset</span>
-          </div>
+            ><span class="label"> selected repos</span>
         </div>
       </div>
     </header>
@@ -640,7 +151,7 @@
         </div>
 
         <!-- Q1: Issue flow & MTTR -->
-        <div class="chart-panel">
+        <div class="chart-panel" id="section-q1">
           <div class="panel-header">
             <div class="badge-q badge-q1">Q1 · MAINTENANCE</div>
             <div class="panel-title">
@@ -676,7 +187,7 @@
         </div>
 
         <!-- Q2: Stability -->
-        <div class="chart-panel">
+        <div class="chart-panel" id="section-q2">
           <div class="panel-header">
             <div class="badge-q badge-q2">Q2 · STABILITY</div>
             <div class="panel-title">Bug injection & rework patterns</div>
@@ -702,7 +213,7 @@
         </div>
 
         <!-- Q3: Structural maintainability -->
-        <div class="chart-panel">
+        <div class="chart-panel" id="section-q3">
           <div class="panel-header">
             <div class="badge-q badge-q3">Q3 · STRUCTURAL QUALITY</div>
             <div class="panel-title">
@@ -736,9 +247,9 @@
         </div>
 
         <!-- Synthesis bar chart -->
-        <div class="chart-panel">
+        <div class="chart-panel" id="section-synthesis">
           <div class="panel-header">
-            <div class="badge-q" style="background: #e0e7ff">
+            <div class="badge-q badge-q4" style="background: #e0e7ff">
               IMPACT SYNTHESIS
             </div>
             <div class="panel-title">Percent change after AI adoption</div>
@@ -772,6 +283,45 @@
 
       let allRepoNames = [];
       let repoSearchTerm = "";
+
+      // Navigation setup
+      function setupNavigation() {
+        const sections = {
+          q1: document.getElementById("section-q1"),
+          q2: document.getElementById("section-q2"),
+          q3: document.getElementById("section-q3"),
+          synthesis: document.getElementById("section-synthesis"),
+        };
+        const buttons = document.querySelectorAll(".nav-btn");
+
+        function removeActiveClasses() {
+          buttons.forEach((btn) => {
+            btn.classList.remove("q1-active", "q2-active", "q3-active", "synthesis-active");
+          });
+        }
+
+        function scrollToSection(sectionId) {
+          const section = sections[sectionId];
+          if (section) {
+            section.scrollIntoView({ behavior: "smooth", block: "start" });
+            removeActiveClasses();
+            const activeBtn = document.querySelector(`.nav-btn[data-section="${sectionId}"]`);
+            if (activeBtn) {
+              if (sectionId === "q1") activeBtn.classList.add("q1-active");
+              else if (sectionId === "q2") activeBtn.classList.add("q2-active");
+              else if (sectionId === "q3") activeBtn.classList.add("q3-active");
+              else if (sectionId === "synthesis") activeBtn.classList.add("synthesis-active");
+            }
+          }
+        }
+
+        buttons.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const sectionId = btn.getAttribute("data-section");
+            scrollToSection(sectionId);
+          });
+        });
+      }
 
       function num(v) {
         let n = parseFloat(v);
@@ -1222,7 +772,6 @@
       }
 
       function applyFiltersAndSelection() {
-        // combine star/age filters with selected repositories
         filteredData = fullData.filter((r) => {
           const stars = num(r.stars),
             age = num(r.age_years);
@@ -1241,7 +790,6 @@
           `${selectedReposSet.size} / ${allRepoNames.length} repositories selected`;
       }
 
-      // Render repository list with search
       function renderRepoList() {
         const container = document.getElementById("repo-list-container");
         const searchLower = repoSearchTerm.toLowerCase();
@@ -1296,7 +844,6 @@
         applyFiltersAndSelection();
       }
 
-      // ---- FILTER LOGIC + RANGE WIDGETS ----
       function buildRangeWidget(
         containerId,
         minId,
@@ -1444,6 +991,7 @@
           .addEventListener("input", updateRepoSearch);
 
         applyFiltersAndSelection();
+        setupNavigation();
       }
 
       function loadCSV() {
@@ -1461,14 +1009,7 @@
             selectedReposSet.clear();
             renderRepoList();
             document.getElementById("loading-overlay").classList.add("hidden");
-            document.getElementById("status-label").innerHTML =
-              "Ready · Select repos";
-            document.querySelector(".dot").style.background = "#10b981";
             initFiltersAndEvents();
-          },
-          error: (err) => {
-            console.error(err);
-            document.getElementById("status-label").innerHTML = "error loading";
           },
         });
       }
