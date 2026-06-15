@@ -1,0 +1,44 @@
+{
+  "timestamp": "2026-06-15T13:08:50.971Z",
+  "total_medicoes": 150,
+  "rq1": {
+    "rest": {
+      "media_ms": 2.8275006666666678,
+      "mediana_ms": 2.36665,
+      "desvio_ms": 1.465828593731053,
+      "p95_ms": 5.8663,
+      "p99_ms": 7.3239
+    },
+    "graphql": {
+      "media_ms": 3.491147333333332,
+      "mediana_ms": 2.9337,
+      "desvio_ms": 2.012086391541432,
+      "p95_ms": 8.551,
+      "p99_ms": 11.2839
+    },
+    "teste_t": {
+      "t_statistic": -4.193884363095467,
+      "p_value": 0.01,
+      "significativo": true
+    },
+    "ganho_percentual": -23.47114094402797
+  },
+  "rq2": {
+    "rest": {
+      "media_bytes": 2644.78,
+      "mediana_bytes": 782,
+      "max_bytes": 11717
+    },
+    "graphql": {
+      "media_bytes": 1478.4666666666667,
+      "mediana_bytes": 824,
+      "max_bytes": 7276
+    },
+    "teste_t": {
+      "t_statistic": 9.23542449586701,
+      "p_value": 0.01,
+      "significativo": true
+    },
+    "reducao_percentual": 44.0986899981599
+  }
+}

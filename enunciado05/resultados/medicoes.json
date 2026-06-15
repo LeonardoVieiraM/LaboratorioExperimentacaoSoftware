@@ -1,0 +1,2702 @@
+[
+  {
+    "timestamp": "2026-06-15T13:08:12.962Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 4500,
+    "rest": {
+      "tempo_ms": 2.3013,
+      "tamanho_bytes": 478,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.789,
+      "tamanho_bytes": 558,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:13.176Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 1000,
+    "rest": {
+      "tempo_ms": 2.2849,
+      "tamanho_bytes": 138,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.1769,
+      "tamanho_bytes": 185,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:13.394Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 2000,
+    "rest": {
+      "tempo_ms": 6.1707,
+      "tamanho_bytes": 392,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 5.0574,
+      "tamanho_bytes": 473,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:13.618Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 389,
+    "rest": {
+      "tempo_ms": 6.1959,
+      "tamanho_bytes": 6371,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 7.3554,
+      "tamanho_bytes": 3932,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:13.846Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 1,
+    "rest": {
+      "tempo_ms": 4.7585,
+      "tamanho_bytes": 7919,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 5.8203,
+      "tamanho_bytes": 4298,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:14.059Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 87,
+    "rest": {
+      "tempo_ms": 2.9618,
+      "tamanho_bytes": 756,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 4.4999,
+      "tamanho_bytes": 798,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:14.288Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 500,
+    "rest": {
+      "tempo_ms": 7.3239,
+      "tamanho_bytes": 5564,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.6508,
+      "tamanho_bytes": 1767,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:14.503Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 1000,
+    "rest": {
+      "tempo_ms": 1.8362,
+      "tamanho_bytes": 138,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.9694,
+      "tamanho_bytes": 185,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:14.720Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 123,
+    "rest": {
+      "tempo_ms": 3.3979,
+      "tamanho_bytes": 6302,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 4.8356,
+      "tamanho_bytes": 4004,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:14.934Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 500,
+    "rest": {
+      "tempo_ms": 2.593,
+      "tamanho_bytes": 800,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.6633,
+      "tamanho_bytes": 842,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:15.149Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 87,
+    "rest": {
+      "tempo_ms": 1.7378,
+      "tamanho_bytes": 155,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.0892,
+      "tamanho_bytes": 135,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:15.370Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 42,
+    "rest": {
+      "tempo_ms": 5.6666,
+      "tamanho_bytes": 5235,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 7.7278,
+      "tamanho_bytes": 2926,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:15.587Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 87,
+    "rest": {
+      "tempo_ms": 2.5102,
+      "tamanho_bytes": 756,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.7243,
+      "tamanho_bytes": 798,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:15.803Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 42,
+    "rest": {
+      "tempo_ms": 4.2433,
+      "tamanho_bytes": 5235,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 4.4903,
+      "tamanho_bytes": 2926,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:16.009Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 1000,
+    "rest": {
+      "tempo_ms": 1.6244,
+      "tamanho_bytes": 138,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.3976,
+      "tamanho_bytes": 185,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:16.217Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 123,
+    "rest": {
+      "tempo_ms": 1.7617,
+      "tamanho_bytes": 146,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.3011,
+      "tamanho_bytes": 126,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:16.430Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 500,
+    "rest": {
+      "tempo_ms": 1.6985,
+      "tamanho_bytes": 707,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 4.7192,
+      "tamanho_bytes": 823,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:16.641Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 4999,
+    "rest": {
+      "tempo_ms": 1.7775,
+      "tamanho_bytes": 421,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.5279,
+      "tamanho_bytes": 503,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:16.866Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 487,
+    "rest": {
+      "tempo_ms": 4.8227,
+      "tamanho_bytes": 9248,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 4.45,
+      "tamanho_bytes": 5725,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:17.078Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 42,
+    "rest": {
+      "tempo_ms": 1.8884,
+      "tamanho_bytes": 158,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.339,
+      "tamanho_bytes": 138,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:17.288Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 87,
+    "rest": {
+      "tempo_ms": 1.7533,
+      "tamanho_bytes": 3116,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.0794,
+      "tamanho_bytes": 1063,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:17.505Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 1,
+    "rest": {
+      "tempo_ms": 4.1071,
+      "tamanho_bytes": 7919,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 4.6081,
+      "tamanho_bytes": 4298,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:17.719Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 500,
+    "rest": {
+      "tempo_ms": 2.7803,
+      "tamanho_bytes": 800,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.9602,
+      "tamanho_bytes": 842,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:17.925Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 500,
+    "rest": {
+      "tempo_ms": 3.0456,
+      "tamanho_bytes": 707,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.2669,
+      "tamanho_bytes": 823,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:18.141Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 123,
+    "rest": {
+      "tempo_ms": 1.9129,
+      "tamanho_bytes": 2994,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.3306,
+      "tamanho_bytes": 1055,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:18.353Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 42,
+    "rest": {
+      "tempo_ms": 3.5196,
+      "tamanho_bytes": 5235,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 5.2538,
+      "tamanho_bytes": 2926,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:18.574Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 410,
+    "rest": {
+      "tempo_ms": 4.4492,
+      "tamanho_bytes": 7845,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 5.3857,
+      "tamanho_bytes": 4868,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:18.793Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 410,
+    "rest": {
+      "tempo_ms": 4.3285,
+      "tamanho_bytes": 7845,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 4.4717,
+      "tamanho_bytes": 4868,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:19.015Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 4950,
+    "rest": {
+      "tempo_ms": 1.7396,
+      "tamanho_bytes": 324,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.5124,
+      "tamanho_bytes": 388,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:19.241Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 450,
+    "rest": {
+      "tempo_ms": 5.1491,
+      "tamanho_bytes": 10852,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 4.6118,
+      "tamanho_bytes": 6269,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:19.453Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 389,
+    "rest": {
+      "tempo_ms": 1.7107,
+      "tamanho_bytes": 3019,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.214,
+      "tamanho_bytes": 947,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:19.665Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 487,
+    "rest": {
+      "tempo_ms": 2.421,
+      "tamanho_bytes": 163,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 4.1466,
+      "tamanho_bytes": 143,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:19.887Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 410,
+    "rest": {
+      "tempo_ms": 4.3516,
+      "tamanho_bytes": 7845,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 4.669,
+      "tamanho_bytes": 4868,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:20.108Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 487,
+    "rest": {
+      "tempo_ms": 2.5573,
+      "tamanho_bytes": 847,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.5433,
+      "tamanho_bytes": 889,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:20.323Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 42,
+    "rest": {
+      "tempo_ms": 4.6036,
+      "tamanho_bytes": 721,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.0204,
+      "tamanho_bytes": 763,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:20.531Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 1,
+    "rest": {
+      "tempo_ms": 1.7059,
+      "tamanho_bytes": 4524,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.8529,
+      "tamanho_bytes": 1259,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:20.759Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 487,
+    "rest": {
+      "tempo_ms": 2.5787,
+      "tamanho_bytes": 847,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 12.8008,
+      "tamanho_bytes": 889,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:20.968Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 487,
+    "rest": {
+      "tempo_ms": 1.9422,
+      "tamanho_bytes": 4393,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.889,
+      "tamanho_bytes": 1385,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:21.176Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 500,
+    "rest": {
+      "tempo_ms": 1.9204,
+      "tamanho_bytes": 707,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.4098,
+      "tamanho_bytes": 823,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:21.385Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 4950,
+    "rest": {
+      "tempo_ms": 1.5504,
+      "tamanho_bytes": 324,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.3628,
+      "tamanho_bytes": 388,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:21.593Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 42,
+    "rest": {
+      "tempo_ms": 1.6963,
+      "tamanho_bytes": 2945,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.4533,
+      "tamanho_bytes": 861,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:21.818Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 410,
+    "rest": {
+      "tempo_ms": 5.0955,
+      "tamanho_bytes": 156,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 8.8443,
+      "tamanho_bytes": 136,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:22.030Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 4500,
+    "rest": {
+      "tempo_ms": 1.5969,
+      "tamanho_bytes": 478,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.1633,
+      "tamanho_bytes": 558,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:22.255Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 410,
+    "rest": {
+      "tempo_ms": 4.3486,
+      "tamanho_bytes": 7845,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 4.2049,
+      "tamanho_bytes": 4868,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:22.469Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 42,
+    "rest": {
+      "tempo_ms": 4.9031,
+      "tamanho_bytes": 721,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.3083,
+      "tamanho_bytes": 763,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:22.684Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 389,
+    "rest": {
+      "tempo_ms": 6.2037,
+      "tamanho_bytes": 6371,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.5623,
+      "tamanho_bytes": 3932,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:22.899Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 1,
+    "rest": {
+      "tempo_ms": 4.3193,
+      "tamanho_bytes": 4524,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.3051,
+      "tamanho_bytes": 1259,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:23.121Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 3000,
+    "rest": {
+      "tempo_ms": 3.6197,
+      "tamanho_bytes": 381,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.4553,
+      "tamanho_bytes": 463,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:23.344Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 410,
+    "rest": {
+      "tempo_ms": 1.5265,
+      "tamanho_bytes": 156,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 8.551,
+      "tamanho_bytes": 136,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:23.560Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 500,
+    "rest": {
+      "tempo_ms": 5.0278,
+      "tamanho_bytes": 11717,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 4.2884,
+      "tamanho_bytes": 7276,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:23.766Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 500,
+    "rest": {
+      "tempo_ms": 1.689,
+      "tamanho_bytes": 152,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.2445,
+      "tamanho_bytes": 132,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:23.976Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 42,
+    "rest": {
+      "tempo_ms": 2.7882,
+      "tamanho_bytes": 721,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.462,
+      "tamanho_bytes": 763,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:24.185Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 450,
+    "rest": {
+      "tempo_ms": 2.7689,
+      "tamanho_bytes": 747,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.5213,
+      "tamanho_bytes": 789,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:24.399Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 4500,
+    "rest": {
+      "tempo_ms": 5.5135,
+      "tamanho_bytes": 478,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.2223,
+      "tamanho_bytes": 558,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:24.610Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 487,
+    "rest": {
+      "tempo_ms": 3.081,
+      "tamanho_bytes": 847,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 4.2968,
+      "tamanho_bytes": 889,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:24.822Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 500,
+    "rest": {
+      "tempo_ms": 1.785,
+      "tamanho_bytes": 5564,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.1188,
+      "tamanho_bytes": 1767,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:25.039Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 1,
+    "rest": {
+      "tempo_ms": 4.1425,
+      "tamanho_bytes": 4524,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.0338,
+      "tamanho_bytes": 1259,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:25.252Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 1,
+    "rest": {
+      "tempo_ms": 1.9241,
+      "tamanho_bytes": 4524,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.481,
+      "tamanho_bytes": 1259,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:25.461Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 256,
+    "rest": {
+      "tempo_ms": 2.6148,
+      "tamanho_bytes": 166,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.2961,
+      "tamanho_bytes": 146,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:25.676Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 1,
+    "rest": {
+      "tempo_ms": 1.5607,
+      "tamanho_bytes": 146,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.0738,
+      "tamanho_bytes": 126,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:25.885Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 389,
+    "rest": {
+      "tempo_ms": 2.4062,
+      "tamanho_bytes": 3019,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.2506,
+      "tamanho_bytes": 947,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:26.101Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 487,
+    "rest": {
+      "tempo_ms": 7.5053,
+      "tamanho_bytes": 847,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.6222,
+      "tamanho_bytes": 889,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:26.309Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 389,
+    "rest": {
+      "tempo_ms": 3.311,
+      "tamanho_bytes": 6371,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.3943,
+      "tamanho_bytes": 3932,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:26.523Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 4000,
+    "rest": {
+      "tempo_ms": 1.5983,
+      "tamanho_bytes": 880,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.4923,
+      "tamanho_bytes": 1012,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:26.732Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 4800,
+    "rest": {
+      "tempo_ms": 2.3137,
+      "tamanho_bytes": 2,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.331,
+      "tamanho_bytes": 33,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:26.958Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 500,
+    "rest": {
+      "tempo_ms": 4.8312,
+      "tamanho_bytes": 11717,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 10.938,
+      "tamanho_bytes": 7276,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:27.170Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 123,
+    "rest": {
+      "tempo_ms": 2.7619,
+      "tamanho_bytes": 782,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.9061,
+      "tamanho_bytes": 824,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:27.376Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 256,
+    "rest": {
+      "tempo_ms": 2.3679,
+      "tamanho_bytes": 768,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.8953,
+      "tamanho_bytes": 810,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:27.584Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 1,
+    "rest": {
+      "tempo_ms": 1.4956,
+      "tamanho_bytes": 4524,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.869,
+      "tamanho_bytes": 1259,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:27.803Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 256,
+    "rest": {
+      "tempo_ms": 1.9649,
+      "tamanho_bytes": 166,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.136,
+      "tamanho_bytes": 146,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:28.018Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 500,
+    "rest": {
+      "tempo_ms": 2.1069,
+      "tamanho_bytes": 800,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.1593,
+      "tamanho_bytes": 842,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:28.232Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 1,
+    "rest": {
+      "tempo_ms": 3.5322,
+      "tamanho_bytes": 7919,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.5216,
+      "tamanho_bytes": 4298,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:28.442Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 123,
+    "rest": {
+      "tempo_ms": 2.2352,
+      "tamanho_bytes": 782,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.8639,
+      "tamanho_bytes": 824,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:28.663Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 487,
+    "rest": {
+      "tempo_ms": 3.2772,
+      "tamanho_bytes": 163,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.0028,
+      "tamanho_bytes": 143,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:28.870Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 410,
+    "rest": {
+      "tempo_ms": 1.4342,
+      "tamanho_bytes": 156,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.1633,
+      "tamanho_bytes": 136,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:29.080Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 123,
+    "rest": {
+      "tempo_ms": 3.0755,
+      "tamanho_bytes": 6302,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.6615,
+      "tamanho_bytes": 4004,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:29.301Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 1,
+    "rest": {
+      "tempo_ms": 5.2248,
+      "tamanho_bytes": 820,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.996,
+      "tamanho_bytes": 862,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:29.510Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 487,
+    "rest": {
+      "tempo_ms": 2.088,
+      "tamanho_bytes": 847,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.1794,
+      "tamanho_bytes": 889,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:29.741Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 87,
+    "rest": {
+      "tempo_ms": 7.0602,
+      "tamanho_bytes": 3116,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 11.2839,
+      "tamanho_bytes": 1063,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:29.954Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 256,
+    "rest": {
+      "tempo_ms": 1.4363,
+      "tamanho_bytes": 166,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.1703,
+      "tamanho_bytes": 146,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:30.163Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 42,
+    "rest": {
+      "tempo_ms": 1.7495,
+      "tamanho_bytes": 158,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 1.9804,
+      "tamanho_bytes": 138,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:30.371Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 123,
+    "rest": {
+      "tempo_ms": 1.6978,
+      "tamanho_bytes": 146,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.0922,
+      "tamanho_bytes": 126,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:30.580Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 256,
+    "rest": {
+      "tempo_ms": 2.3024,
+      "tamanho_bytes": 768,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.211,
+      "tamanho_bytes": 810,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:30.786Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 123,
+    "rest": {
+      "tempo_ms": 1.6983,
+      "tamanho_bytes": 2994,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.6342,
+      "tamanho_bytes": 1055,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:31.003Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 4950,
+    "rest": {
+      "tempo_ms": 4.5888,
+      "tamanho_bytes": 324,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.017,
+      "tamanho_bytes": 388,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:31.212Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 450,
+    "rest": {
+      "tempo_ms": 1.5202,
+      "tamanho_bytes": 5514,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.5448,
+      "tamanho_bytes": 1491,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:31.420Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 4000,
+    "rest": {
+      "tempo_ms": 1.4106,
+      "tamanho_bytes": 880,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.1878,
+      "tamanho_bytes": 1012,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:31.627Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 42,
+    "rest": {
+      "tempo_ms": 1.9354,
+      "tamanho_bytes": 721,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.8792,
+      "tamanho_bytes": 763,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:31.835Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 87,
+    "rest": {
+      "tempo_ms": 1.3511,
+      "tamanho_bytes": 155,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.2124,
+      "tamanho_bytes": 135,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:32.045Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 500,
+    "rest": {
+      "tempo_ms": 2.3703,
+      "tamanho_bytes": 800,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.2817,
+      "tamanho_bytes": 842,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:32.253Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 1,
+    "rest": {
+      "tempo_ms": 1.5267,
+      "tamanho_bytes": 146,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 1.9951,
+      "tamanho_bytes": 126,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:32.463Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 4500,
+    "rest": {
+      "tempo_ms": 1.3869,
+      "tamanho_bytes": 478,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.9414,
+      "tamanho_bytes": 558,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:32.677Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 87,
+    "rest": {
+      "tempo_ms": 2.3654,
+      "tamanho_bytes": 3116,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.1838,
+      "tamanho_bytes": 1063,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:32.885Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 256,
+    "rest": {
+      "tempo_ms": 1.4764,
+      "tamanho_bytes": 166,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 1.9654,
+      "tamanho_bytes": 146,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:33.097Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 256,
+    "rest": {
+      "tempo_ms": 2.9874,
+      "tamanho_bytes": 768,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.1196,
+      "tamanho_bytes": 810,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:33.309Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 256,
+    "rest": {
+      "tempo_ms": 1.5099,
+      "tamanho_bytes": 166,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.008,
+      "tamanho_bytes": 146,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:33.516Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 4950,
+    "rest": {
+      "tempo_ms": 1.4575,
+      "tamanho_bytes": 324,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.3871,
+      "tamanho_bytes": 388,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:33.725Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 450,
+    "rest": {
+      "tempo_ms": 1.4748,
+      "tamanho_bytes": 148,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.0914,
+      "tamanho_bytes": 128,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:33.934Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 123,
+    "rest": {
+      "tempo_ms": 1.5795,
+      "tamanho_bytes": 2994,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.0436,
+      "tamanho_bytes": 1055,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:34.142Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 1,
+    "rest": {
+      "tempo_ms": 1.8099,
+      "tamanho_bytes": 4524,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.5737,
+      "tamanho_bytes": 1259,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:34.351Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 389,
+    "rest": {
+      "tempo_ms": 3.68,
+      "tamanho_bytes": 6371,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.3348,
+      "tamanho_bytes": 3932,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:34.558Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 450,
+    "rest": {
+      "tempo_ms": 1.405,
+      "tamanho_bytes": 148,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.3168,
+      "tamanho_bytes": 128,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:34.781Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 450,
+    "rest": {
+      "tempo_ms": 5.0843,
+      "tamanho_bytes": 148,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 1.9209,
+      "tamanho_bytes": 128,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:34.990Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 4800,
+    "rest": {
+      "tempo_ms": 2.0788,
+      "tamanho_bytes": 2,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.2191,
+      "tamanho_bytes": 33,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:35.216Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 487,
+    "rest": {
+      "tempo_ms": 3.9142,
+      "tamanho_bytes": 4393,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 9.4246,
+      "tamanho_bytes": 1385,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:35.439Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 389,
+    "rest": {
+      "tempo_ms": 2.8072,
+      "tamanho_bytes": 752,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 10.6886,
+      "tamanho_bytes": 794,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:35.648Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 100,
+    "rest": {
+      "tempo_ms": 1.6822,
+      "tamanho_bytes": 548,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.021,
+      "tamanho_bytes": 647,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:35.858Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 42,
+    "rest": {
+      "tempo_ms": 1.4564,
+      "tamanho_bytes": 158,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 1.9248,
+      "tamanho_bytes": 138,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:36.078Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 4800,
+    "rest": {
+      "tempo_ms": 7.1981,
+      "tamanho_bytes": 2,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 4.8931,
+      "tamanho_bytes": 33,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:36.289Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 256,
+    "rest": {
+      "tempo_ms": 2.7368,
+      "tamanho_bytes": 768,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.2907,
+      "tamanho_bytes": 810,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:36.504Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 256,
+    "rest": {
+      "tempo_ms": 1.7619,
+      "tamanho_bytes": 4746,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.1094,
+      "tamanho_bytes": 1458,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:36.713Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 4500,
+    "rest": {
+      "tempo_ms": 1.4449,
+      "tamanho_bytes": 478,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.0226,
+      "tamanho_bytes": 558,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:36.921Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 42,
+    "rest": {
+      "tempo_ms": 3.5314,
+      "tamanho_bytes": 5235,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.3507,
+      "tamanho_bytes": 2926,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:37.129Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 487,
+    "rest": {
+      "tempo_ms": 1.6011,
+      "tamanho_bytes": 4393,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.3418,
+      "tamanho_bytes": 1385,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:37.344Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 123,
+    "rest": {
+      "tempo_ms": 1.6944,
+      "tamanho_bytes": 2994,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.3843,
+      "tamanho_bytes": 1055,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:37.559Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 87,
+    "rest": {
+      "tempo_ms": 4.0619,
+      "tamanho_bytes": 3116,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.0576,
+      "tamanho_bytes": 1063,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:37.778Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 256,
+    "rest": {
+      "tempo_ms": 5.8663,
+      "tamanho_bytes": 4746,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.8739,
+      "tamanho_bytes": 1458,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:37.994Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 500,
+    "rest": {
+      "tempo_ms": 4.5837,
+      "tamanho_bytes": 11717,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 5.6609,
+      "tamanho_bytes": 7276,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:38.207Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 487,
+    "rest": {
+      "tempo_ms": 4.5292,
+      "tamanho_bytes": 9248,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.6993,
+      "tamanho_bytes": 5725,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:38.414Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 4999,
+    "rest": {
+      "tempo_ms": 1.5184,
+      "tamanho_bytes": 421,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.1334,
+      "tamanho_bytes": 503,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:38.621Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 1,
+    "rest": {
+      "tempo_ms": 1.6755,
+      "tamanho_bytes": 4524,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.2611,
+      "tamanho_bytes": 1259,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:38.830Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 256,
+    "rest": {
+      "tempo_ms": 2.4261,
+      "tamanho_bytes": 768,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.6525,
+      "tamanho_bytes": 810,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:39.041Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 389,
+    "rest": {
+      "tempo_ms": 3.4421,
+      "tamanho_bytes": 6371,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 4.791,
+      "tamanho_bytes": 3932,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:39.254Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 256,
+    "rest": {
+      "tempo_ms": 1.4703,
+      "tamanho_bytes": 166,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.0329,
+      "tamanho_bytes": 146,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:39.462Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 4999,
+    "rest": {
+      "tempo_ms": 2.5675,
+      "tamanho_bytes": 421,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.064,
+      "tamanho_bytes": 503,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:39.671Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 123,
+    "rest": {
+      "tempo_ms": 1.7617,
+      "tamanho_bytes": 2994,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.4552,
+      "tamanho_bytes": 1055,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:39.879Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 500,
+    "rest": {
+      "tempo_ms": 1.4767,
+      "tamanho_bytes": 152,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.2506,
+      "tamanho_bytes": 132,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:40.096Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 500,
+    "rest": {
+      "tempo_ms": 1.5876,
+      "tamanho_bytes": 707,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 7.7498,
+      "tamanho_bytes": 823,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:40.302Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 487,
+    "rest": {
+      "tempo_ms": 2.2596,
+      "tamanho_bytes": 163,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 1.9158,
+      "tamanho_bytes": 143,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:40.524Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 500,
+    "rest": {
+      "tempo_ms": 1.4531,
+      "tamanho_bytes": 152,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 1.8579,
+      "tamanho_bytes": 132,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:40.734Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 389,
+    "rest": {
+      "tempo_ms": 3.2105,
+      "tamanho_bytes": 6371,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.428,
+      "tamanho_bytes": 3932,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:40.948Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 100,
+    "rest": {
+      "tempo_ms": 1.5264,
+      "tamanho_bytes": 548,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.7791,
+      "tamanho_bytes": 647,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:41.157Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 450,
+    "rest": {
+      "tempo_ms": 3.695,
+      "tamanho_bytes": 10852,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.8795,
+      "tamanho_bytes": 6269,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:41.367Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 487,
+    "rest": {
+      "tempo_ms": 4.0912,
+      "tamanho_bytes": 9248,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.9781,
+      "tamanho_bytes": 5725,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:41.575Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 450,
+    "rest": {
+      "tempo_ms": 2.4797,
+      "tamanho_bytes": 747,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.1025,
+      "tamanho_bytes": 789,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:41.794Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 123,
+    "rest": {
+      "tempo_ms": 1.8598,
+      "tamanho_bytes": 782,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 11.1565,
+      "tamanho_bytes": 824,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:42.005Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 450,
+    "rest": {
+      "tempo_ms": 2.6096,
+      "tamanho_bytes": 747,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.9729,
+      "tamanho_bytes": 789,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:42.213Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 256,
+    "rest": {
+      "tempo_ms": 2.5804,
+      "tamanho_bytes": 4746,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.4582,
+      "tamanho_bytes": 1458,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:42.425Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 1,
+    "rest": {
+      "tempo_ms": 3.9884,
+      "tamanho_bytes": 7919,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.5068,
+      "tamanho_bytes": 4298,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:42.635Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 500,
+    "rest": {
+      "tempo_ms": 1.3995,
+      "tamanho_bytes": 5564,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.3452,
+      "tamanho_bytes": 1767,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:42.841Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 87,
+    "rest": {
+      "tempo_ms": 1.4947,
+      "tamanho_bytes": 155,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 1.9045,
+      "tamanho_bytes": 135,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:43.054Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 389,
+    "rest": {
+      "tempo_ms": 3.4506,
+      "tamanho_bytes": 6371,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.4067,
+      "tamanho_bytes": 3932,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:43.270Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 4800,
+    "rest": {
+      "tempo_ms": 1.4995,
+      "tamanho_bytes": 2,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.2666,
+      "tamanho_bytes": 33,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:43.478Z",
+    "id_consulta": 3,
+    "nome_consulta": "Posts de usuário com comentários",
+    "id_param": 256,
+    "rest": {
+      "tempo_ms": 4.0967,
+      "tamanho_bytes": 9083,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.884,
+      "tamanho_bytes": 5334,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:43.685Z",
+    "id_consulta": 2,
+    "nome_consulta": "Posts de usuário sem comentários",
+    "id_param": 410,
+    "rest": {
+      "tempo_ms": 1.7377,
+      "tamanho_bytes": 3775,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.2916,
+      "tamanho_bytes": 1226,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:43.893Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 450,
+    "rest": {
+      "tempo_ms": 1.5885,
+      "tamanho_bytes": 148,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.5907,
+      "tamanho_bytes": 128,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:44.102Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 450,
+    "rest": {
+      "tempo_ms": 2.5501,
+      "tamanho_bytes": 747,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 2.926,
+      "tamanho_bytes": 789,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:44.311Z",
+    "id_consulta": 4,
+    "nome_consulta": "Dashboard completo do usuário",
+    "id_param": 487,
+    "rest": {
+      "tempo_ms": 2.4091,
+      "tamanho_bytes": 847,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 3.2158,
+      "tamanho_bytes": 889,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:44.525Z",
+    "id_consulta": 5,
+    "nome_consulta": "Comentários de um post específico",
+    "id_param": 4999,
+    "rest": {
+      "tempo_ms": 1.5118,
+      "tamanho_bytes": 421,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 1.9716,
+      "tamanho_bytes": 503,
+      "status": 200,
+      "erro": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T13:08:44.733Z",
+    "id_consulta": 1,
+    "nome_consulta": "Dados básicos de usuário",
+    "id_param": 389,
+    "rest": {
+      "tempo_ms": 1.4769,
+      "tamanho_bytes": 158,
+      "status": 200,
+      "erro": null
+    },
+    "graphql": {
+      "tempo_ms": 1.8619,
+      "tamanho_bytes": 138,
+      "status": 200,
+      "erro": null
+    }
+  }
+]

@@ -6,3 +6,4 @@ enunciado02/.env
 /enunciado02/.vscode
 enunciado03/.env
 /enunciado03/__pycache__
+/enunciado05/node_modules

@@ -1,0 +1,26 @@
+{
+  "name": "graphql-rest",
+  "version": "1.0.0",
+  "description": "Experimento controlado comparando performance de GraphQL vs REST",
+  "main": "scripts/executar-experimento.js",
+  "scripts": {
+    "init-db": "node database/init-db.js",
+    "start-rest": "node server-rest.js",
+    "start-graphql": "node server-graphql.js",
+    "experiment": "node scripts/executar-experimento.js",
+    "analyze": "node scripts/analisar-resultados.js"
+  },
+"dependencies": {
+    "express": "^4.18.2",
+    "express-graphql": "^0.12.0",
+    "graphql": "^15.8.0",
+    "graphql-tools": "^9.0.0",
+    "sqlite3": "^5.1.6",
+    "sqlite": "^5.1.1",
+    "axios": "^1.6.2",
+    "@faker-js/faker": "^8.3.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
