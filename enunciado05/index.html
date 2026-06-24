@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GraphQL vs REST · Dashboard Experimental</title>
+    <meta name="description" content="Dashboard de visualização dos resultados do experimento controlado comparando GraphQL e REST em tempo de resposta e tamanho de payload." />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@sgratzl/chartjs-chart-boxplot@4.4.3/build/index.umd.min.js"></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- ===== HEADER ===== -->
+    <header class="app-header">
+      <div class="header-inner">
+        <div class="brand">
+          <div class="brand-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <h1>GraphQL vs REST</h1>
+            <span>Experimento Controlado · Lab05</span>
+          </div>
+        </div>
+
+        <nav class="tab-nav" id="tab-nav">
+          <button class="tab-btn active" data-tab="overview" id="tab-btn-overview">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 10a8 8 0 1016 0A8 8 0 002 10zm9-2V6a1 1 0 10-2 0v2H7a1 1 0 000 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2H11z"/></svg>
+            Visão Geral
+          </button>
+          <button class="tab-btn" data-tab="rq1" id="tab-btn-rq1">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+            RQ1 · Tempo
+          </button>
+          <button class="tab-btn" data-tab="rq2" id="tab-btn-rq2">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+            RQ2 · Tamanho
+          </button>
+          <button class="tab-btn" data-tab="queries" id="tab-btn-queries">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
+            Por Consulta
+          </button>
+          <button class="tab-btn" data-tab="raw" id="tab-btn-raw">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l2.293 2.293a1 1 0 11-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 1a1 1 0 010-2h4a1 1 0 011 1v4a1 1 0 01-2 0V6.414l-2.293 2.293a1 1 0 11-1.414-1.414L13.586 5H12zm-9 7a1 1 0 012 0v1.586l2.293-2.293a1 1 0 111.414 1.414L6.414 15H8a1 1 0 010 2H4a1 1 0 01-1-1v-4zm13-1a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 010-2h1.586l-2.293-2.293a1 1 0 111.414-1.414L15 13.586V12a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+            Dados Brutos
+          </button>
+        </nav>
+
+        <div class="header-stats">
+          <div class="stat-badge">
+            <span class="num" id="total-medicoes-header">—</span>
+            <span class="label"> medições</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ===== LAYOUT ===== -->
+    <div class="app-layout">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-title">FILTROS</div>
+
+        <div class="toggle-switch" id="outlier-toggle">
+          <span class="toggle-label">Remover outliers (IQR)</span>
+          <div class="toggle-track" id="toggle-track">
+            <div class="toggle-thumb"></div>
+          </div>
+        </div>
+        <div class="info-note">Exclui valores além de 1.5×IQR por métrica.</div>
+
+        <div class="sidebar-divider"></div>
+
+        <div class="filter-label">TIPO DE CONSULTA</div>
+        <div class="query-filter-list" id="query-filter-list"></div>
+
+        <div class="sidebar-divider"></div>
+
+        <div class="filter-label">MÉTRICA</div>
+        <div class="metric-selector">
+          <button class="metric-btn active" data-metric="both"    id="metric-btn-both">Ambas</button>
+          <button class="metric-btn"         data-metric="tempo"   id="metric-btn-tempo">Tempo</button>
+          <button class="metric-btn"         data-metric="tamanho" id="metric-btn-tamanho">Tamanho</button>
+        </div>
+
+        <div class="sidebar-divider"></div>
+
+        <div class="filter-label">RESUMO RÁPIDO</div>
+        <div class="quick-stats">
+          <div class="qs-row"><span class="qs-label">Total medições</span><span class="qs-val" id="qs-total">—</span></div>
+          <div class="qs-row"><span class="qs-label">Consultas únicas</span><span class="qs-val" id="qs-queries">—</span></div>
+          <div class="qs-row"><span class="qs-label">Período</span><span class="qs-val" id="qs-period">—</span></div>
+        </div>
+      </aside>
+
+      <main class="main-content">
+
+        <!-- ===== TAB: OVERVIEW ===== -->
+        <section class="tab-section active" id="tab-overview">
+          <div class="section-header">
+            <h2 class="section-title">Visão Geral do Experimento</h2>
+            <p class="section-sub">Comparação global entre GraphQL e REST nas duas perguntas de pesquisa</p>
+          </div>
+
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-icon">⏱</div>
+              <div class="kpi-label">Tempo Médio REST</div>
+              <div class="kpi-value" id="kpi-val-tempo-rest">—</div>
+              <div class="kpi-sub">mediana: <span id="kpi-med-tempo-rest">—</span></div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon">⚡</div>
+              <div class="kpi-label">Tempo Médio GraphQL</div>
+              <div class="kpi-value" id="kpi-val-tempo-gql">—</div>
+              <div class="kpi-sub">mediana: <span id="kpi-med-tempo-gql">—</span></div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon">📦</div>
+              <div class="kpi-label">Tamanho Médio REST</div>
+              <div class="kpi-value" id="kpi-val-tam-rest">—</div>
+              <div class="kpi-sub">mediana: <span id="kpi-med-tam-rest">—</span></div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon">🗜</div>
+              <div class="kpi-label">Tamanho Médio GraphQL</div>
+              <div class="kpi-value" id="kpi-val-tam-gql">—</div>
+              <div class="kpi-sub">mediana: <span id="kpi-med-tam-gql">—</span></div>
+            </div>
+          </div>
+
+          <div class="verdict-grid">
+            <div class="verdict-card">
+              <div class="verdict-label">RQ1 · Tempo de Resposta</div>
+              <div class="verdict-value" id="verdict-rq1-val">—</div>
+              <div class="verdict-stat" id="verdict-rq1-stat">—</div>
+              <div class="verdict-badge" id="verdict-rq1-badge">Aguardando…</div>
+            </div>
+            <div class="verdict-card">
+              <div class="verdict-label">RQ2 · Tamanho do Payload</div>
+              <div class="verdict-value" id="verdict-rq2-val">—</div>
+              <div class="verdict-stat" id="verdict-rq2-stat">—</div>
+              <div class="verdict-badge" id="verdict-rq2-badge">Aguardando…</div>
+            </div>
+          </div>
+
+          <!-- Slope + Dumbbell side by side -->
+          <div class="charts-row">
+            <div class="chart-card">
+              <div class="chart-title">Slope Chart — Tempo REST → GraphQL por Consulta</div>
+              <div class="chart-subtitle">Gráfico de inclinação (Data-to-Viz): mostra direção e magnitude da mudança entre protocolos para cada tipo de consulta</div>
+              <canvas id="chart-slope-tempo" height="220"></canvas>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">Dumbbell Chart — Tamanho de Payload por Consulta</div>
+              <div class="chart-subtitle">Plot de pontos paralelos (Data-to-Viz): compara REST ● e GraphQL ● para cada consulta — distância mostra a diferença</div>
+              <canvas id="chart-dumbbell-tam" height="220"></canvas>
+            </div>
+          </div>
+
+          <!-- Scatter full width -->
+          <div class="chart-card full-width">
+            <div class="chart-title">Scatter: Correlação Tempo × Tamanho</div>
+            <div class="chart-subtitle">Cada ponto é uma medição — revela se respostas mais rápidas também tendem a ser menores (ou não)</div>
+            <canvas id="chart-scatter-overview" height="200"></canvas>
+          </div>
+        </section>
+
+        <!-- ===== TAB: RQ1 ===== -->
+        <section class="tab-section" id="tab-rq1">
+          <div class="section-header">
+            <h2 class="section-title">RQ1 · Velocidade de Resposta</h2>
+            <p class="section-sub">Respostas GraphQL são mais rápidas que REST?</p>
+          </div>
+
+          <div class="hypothesis-banner">
+            <div class="hyp-icon">🔬</div>
+            <div class="hyp-text">
+              <strong>H₀:</strong> Não há diferença significativa no tempo de resposta entre GraphQL e REST.<br/>
+              <strong>H₁:</strong> GraphQL apresenta tempo de resposta diferente de REST.
+            </div>
+            <div class="hyp-result" id="hyp-rq1-result">—</div>
+          </div>
+
+          <div class="stat-table-card">
+            <div class="chart-title">Estatísticas Descritivas — Tempo (ms)</div>
+            <table class="stat-table">
+              <thead><tr><th>Protocolo</th><th>Média</th><th>Mediana</th><th>Desvio Padrão</th><th>P95</th><th>P99</th></tr></thead>
+              <tbody id="stat-table-rq1-body"><tr><td colspan="6" class="loading-cell">Carregando…</td></tr></tbody>
+            </table>
+          </div>
+
+          <div class="ttest-card">
+            <div class="ttest-title">Teste t Pareado</div>
+            <div class="ttest-vals">
+              <div class="ttest-item"><span class="ttest-label">t-statistic</span><span class="ttest-val" id="tt-rq1-t">—</span></div>
+              <div class="ttest-item"><span class="ttest-label">p-value</span><span class="ttest-val" id="tt-rq1-p">—</span></div>
+              <div class="ttest-item"><span class="ttest-label">Significativo (α=0.05)</span><span class="ttest-val" id="tt-rq1-sig">—</span></div>
+            </div>
+          </div>
+
+          <div class="charts-row">
+            <div class="chart-card">
+              <div class="chart-title">Box Plot — Distribuição de Tempo</div>
+              <div class="chart-subtitle">Mediana, quartis e outliers — resumo estatístico de n=150 medições por protocolo</div>
+              <canvas id="chart-boxplot-tempo" height="210"></canvas>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">Strip Plot — Medições Individuais</div>
+              <div class="chart-subtitle">Jitter plot (Data-to-Viz): cada ponto é uma medição real — revela forma e densidade da distribuição</div>
+              <canvas id="chart-jitter-tempo" height="210"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card full-width">
+            <div class="chart-title">Slope Chart — Tempo por Tipo de Consulta</div>
+            <div class="chart-subtitle">Gráfico de inclinação (Data-to-Viz): compara REST→GraphQL para cada consulta — linhas descendentes indicam ganho de velocidade</div>
+            <canvas id="chart-slope-rq1" height="210"></canvas>
+          </div>
+        </section>
+
+        <!-- ===== TAB: RQ2 ===== -->
+        <section class="tab-section" id="tab-rq2">
+          <div class="section-header">
+            <h2 class="section-title">RQ2 · Tamanho do Payload</h2>
+            <p class="section-sub">Respostas GraphQL têm tamanho menor que REST?</p>
+          </div>
+
+          <div class="hypothesis-banner">
+            <div class="hyp-icon">🔬</div>
+            <div class="hyp-text">
+              <strong>H₀:</strong> Não há diferença significativa no tamanho do payload entre GraphQL e REST.<br/>
+              <strong>H₁:</strong> GraphQL apresenta payload menor que REST.
+            </div>
+            <div class="hyp-result" id="hyp-rq2-result">—</div>
+          </div>
+
+          <div class="stat-table-card">
+            <div class="chart-title">Estatísticas Descritivas — Tamanho (bytes)</div>
+            <table class="stat-table">
+              <thead><tr><th>Protocolo</th><th>Média</th><th>Mediana</th><th>Máximo</th></tr></thead>
+              <tbody id="stat-table-rq2-body"><tr><td colspan="4" class="loading-cell">Carregando…</td></tr></tbody>
+            </table>
+          </div>
+
+          <div class="ttest-card">
+            <div class="ttest-title">Teste t Pareado</div>
+            <div class="ttest-vals">
+              <div class="ttest-item"><span class="ttest-label">t-statistic</span><span class="ttest-val" id="tt-rq2-t">—</span></div>
+              <div class="ttest-item"><span class="ttest-label">p-value</span><span class="ttest-val" id="tt-rq2-p">—</span></div>
+              <div class="ttest-item"><span class="ttest-label">Significativo (α=0.05)</span><span class="ttest-val" id="tt-rq2-sig">—</span></div>
+            </div>
+          </div>
+
+          <div class="charts-row">
+            <div class="chart-card">
+              <div class="chart-title">Box Plot — Distribuição de Tamanho</div>
+              <div class="chart-subtitle">Comparação da dispersão de payload REST vs GraphQL em todas as 150 medições</div>
+              <canvas id="chart-boxplot-tamanho" height="210"></canvas>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">Lollipop Divergente — % Redução por Consulta</div>
+              <div class="chart-subtitle">Lollipop chart (Data-to-Viz): barras finas + ponto — positivo = GraphQL menor, negativo = REST menor</div>
+              <canvas id="chart-lollipop-tam" height="210"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card full-width">
+            <div class="chart-title">Barras Agrupadas — Tamanho Médio por Consulta</div>
+            <div class="chart-subtitle">Comparação direta de bytes médios REST vs GraphQL para cada tipo de consulta</div>
+            <canvas id="chart-bars-tamanho" height="190"></canvas>
+          </div>
+        </section>
+
+        <!-- ===== TAB: POR CONSULTA ===== -->
+        <section class="tab-section" id="tab-queries">
+          <div class="section-header">
+            <h2 class="section-title">Análise por Tipo de Consulta</h2>
+            <p class="section-sub">Desempenho detalhado para cada uma das 5 consultas experimentais (30 trials cada)</p>
+          </div>
+
+          <div class="query-detail-grid" id="query-detail-grid"></div>
+
+          <div class="charts-row">
+            <div class="chart-card">
+              <div class="chart-title">Dumbbell Chart — Tempo por Consulta</div>
+              <div class="chart-subtitle">Pontos paralelos (Data-to-Viz): ● REST · ● GraphQL — comprimento da linha = magnitude da diferença</div>
+              <canvas id="chart-dumbbell-tempo" height="220"></canvas>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">Lollipop Divergente — Ganho % de Tempo</div>
+              <div class="chart-subtitle">Lollipop (Data-to-Viz): positivo = GraphQL mais rápido, negativo = REST mais rápido</div>
+              <canvas id="chart-lollipop-tempo" height="220"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card full-width">
+            <div class="chart-title">Barras Agrupadas — Tempo Médio por Consulta</div>
+            <div class="chart-subtitle">Comparação REST vs GraphQL em milissegundos para cada tipo de consulta</div>
+            <canvas id="chart-grouped-tempo" height="190"></canvas>
+          </div>
+        </section>
+
+        <!-- ===== TAB: RAW ===== -->
+        <section class="tab-section" id="tab-raw">
+          <div class="section-header">
+            <h2 class="section-title">Dados Brutos</h2>
+            <p class="section-sub">Todas as medições individuais do experimento</p>
+          </div>
+
+          <div class="raw-controls">
+            <input type="text" id="raw-search" placeholder="Buscar por consulta ou parâmetro…" class="raw-search-input" />
+            <select id="raw-filter-query" class="raw-select"><option value="">Todas as consultas</option></select>
+            <select id="raw-sort" class="raw-select">
+              <option value="timestamp">Ordenar: Timestamp</option>
+              <option value="rest_tempo">Ordenar: Tempo REST ↑</option>
+              <option value="gql_tempo">Ordenar: Tempo GraphQL ↑</option>
+              <option value="rest_tam">Ordenar: Tamanho REST ↑</option>
+              <option value="gql_tam">Ordenar: Tamanho GraphQL ↑</option>
+            </select>
+            <span class="raw-count" id="raw-count">— linhas</span>
+          </div>
+
+          <div class="raw-table-wrap">
+            <table class="raw-table">
+              <thead>
+                <tr>
+                  <th>#</th><th>Consulta</th><th>Param</th>
+                  <th>REST (ms)</th><th>GQL (ms)</th><th>Δ Tempo</th>
+                  <th>REST (bytes)</th><th>GQL (bytes)</th><th>Δ Tamanho</th>
+                  <th>Timestamp</th>
+                </tr>
+              </thead>
+              <tbody id="raw-table-body"><tr><td colspan="10" class="loading-cell">Carregando…</td></tr></tbody>
+            </table>
+          </div>
+          <div class="raw-pagination" id="raw-pagination"></div>
+        </section>
+
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
