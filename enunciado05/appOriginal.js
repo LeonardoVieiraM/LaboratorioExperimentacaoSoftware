@@ -1,5 +1,12 @@
 /* ============================================================
-   GRAPHQL vs REST DASHBOARD — app.js (Corrigido - Boxplot)
+   GRAPHQL vs REST DASHBOARD — app.js
+   Charts chosen based on Data-to-Viz recommendations:
+   • Slope chart  → paired comparison (REST→GraphQL per query)
+   • Box + jitter → distribution of n=150 measurements
+   • Dumbbell     → multi-query paired dot plot
+   • Lollipop     → % reduction ranking (cleaner than bar)
+   • Scatter      → correlation Tempo × Tamanho
+   • Grouped bar  → absolute comparison per query
    ============================================================ */
 
 // ── Color palette (light theme) ────────────────────────────────────────────
@@ -39,46 +46,30 @@ const charts = {};
 // ── Utilities ──────────────────────────────────────────────────────────────
 const mean = arr => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0;
 const sum  = arr => arr.reduce((a,b)=>a+b,0);
-
 function median(arr) {
   if (!arr.length) return 0;
   const s=[...arr].sort((a,b)=>a-b), m=Math.floor(s.length/2);
   return s.length%2===0?(s[m-1]+s[m])/2:s[m];
 }
-
 function stddev(arr) {
   if (!arr.length) return 0;
   const m=mean(arr);
   return Math.sqrt(arr.reduce((a,v)=>a+Math.pow(v-m,2),0)/arr.length);
 }
-
 function percentile(arr, p) {
   if (!arr.length) return 0;
   const s=[...arr].sort((a,b)=>a-b);
-  const idx = (p/100) * (s.length - 1);
-  const lower = Math.floor(idx);
-  const upper = Math.ceil(idx);
-  if (lower === upper) return s[lower];
-  return s[lower] + (s[upper] - s[lower]) * (idx - lower);
+  return s[Math.max(0,Math.min(Math.ceil((p/100)*s.length)-1,s.length-1))];
 }
-
 function iqrFilter(arr) {
-  if (!arr.length) return arr;
   const q1=percentile(arr,25), q3=percentile(arr,75), iqr=q3-q1;
   return arr.filter(v=>v>=q1-1.5*iqr&&v<=q3+1.5*iqr);
 }
-
-const fmt = (n,d=2) => Number(n).toFixed(d);
-const fmtMs = ms => `${fmt(ms,2)} ms`;
+const fmt     = (n,d=2) => Number(n).toFixed(d);
+const fmtMs   = ms => `${fmt(ms,2)} ms`;
 const fmtBytes = b => b<1024 ? `${fmt(b,0)} B` : `${fmt(b/1024,2)} KB`;
 
-function destroyChart(id) { 
-  if(charts[id]) {
-    charts[id].destroy();
-    delete charts[id]; 
-  } 
-}
-
+function destroyChart(id) { if(charts[id]){charts[id].destroy();delete charts[id];} }
 function mkChart(id, config) {
   destroyChart(id);
   const ctx = document.getElementById(id);
@@ -135,7 +126,20 @@ function groupByQuery(data) {
     g[d.id_consulta].rest_tamanhos.push(d.rest.tamanho_bytes);
     g[d.id_consulta].gql_tamanhos.push(d.graphql.tamanho_bytes);
   });
-  return Object.values(g).sort((a,b)=>a.id-b.id);
+
+  const result = Object.values(g).sort((a,b)=>a.id-b.id);
+
+  // CORREÇÃO: Se o toggle estiver ativo, remove os outliers de cada grupo individualmente
+  if (state.removeOutliers) {
+    result.forEach(group => {
+      group.rest_tempos = iqrFilter(group.rest_tempos);
+      group.gql_tempos  = iqrFilter(group.gql_tempos);
+      group.rest_tamanhos = iqrFilter(group.rest_tamanhos);
+      group.gql_tamanhos  = iqrFilter(group.gql_tamanhos);
+    });
+  }
+
+  return result;
 }
 
 const shortName = g => g.nome.length > 22 ? g.nome.substring(0,20)+'…' : g.nome;
@@ -151,6 +155,7 @@ Chart.defaults.plugins.tooltip.borderWidth = 1;
 Chart.defaults.plugins.tooltip.padding = 10;
 Chart.defaults.plugins.tooltip.titleColor = C.textDark;
 Chart.defaults.plugins.tooltip.bodyColor = C.text;
+Chart.defaults.plugins.tooltip.boxShadow = '0 4px 16px rgba(0,0,0,0.1)';
 
 const baseScales = {
   x: { grid:{color:C.grid}, ticks:{color:C.text, font:{size:11}} },
@@ -159,6 +164,11 @@ const baseScales = {
 
 // ── CHART BUILDERS ─────────────────────────────────────────────────────────
 
+/**
+ * SLOPE CHART (Connected dot plot)
+ * Data-to-Viz: best for paired comparison showing direction of change
+ * Perfect for REST→GraphQL per query type
+ */
 function buildSlopeChart(canvasId, groups, metric='tempo', title='') {
   const labels = ['REST', 'GraphQL'];
   const datasets = groups.map((g, i) => {
@@ -167,8 +177,8 @@ function buildSlopeChart(canvasId, groups, metric='tempo', title='') {
     return {
       label: shortName(g),
       data: [restVal, gqlVal],
-      borderColor: QUERY_COLORS[i % QUERY_COLORS.length],
-      backgroundColor: QUERY_COLORS[i % QUERY_COLORS.length],
+      borderColor: QUERY_COLORS[i],
+      backgroundColor: QUERY_COLORS[i],
       borderWidth: 2.5,
       pointRadius: 7,
       pointHoverRadius: 9,
@@ -211,12 +221,18 @@ function buildSlopeChart(canvasId, groups, metric='tempo', title='') {
   });
 }
 
+/**
+ * DUMBBELL CHART (horizontal dot plot with range line)
+ * Data-to-Viz: parallel dot plot — best for showing REST vs GraphQL per query
+ * Encodes direction and magnitude clearly without distortion
+ */
 function buildDumbbellChart(canvasId, groups, metric='tempo') {
   const labels = groups.map(shortName);
   const restVals = groups.map(g => metric==='tempo' ? mean(g.rest_tempos) : mean(g.rest_tamanhos));
   const gqlVals  = groups.map(g => metric==='tempo' ? mean(g.gql_tempos)  : mean(g.gql_tamanhos));
   const xLabel   = metric==='tempo' ? 'Tempo (ms)' : 'Tamanho (bytes)';
 
+  // Custom plugin to draw connecting lines between REST and GQL dots
   const dumbbellLinePlugin = {
     id: 'dumbbellLines_' + canvasId,
     afterDatasetsDraw(chart) {
@@ -311,33 +327,14 @@ function buildDumbbellChart(canvasId, groups, metric='tempo') {
   return ch;
 }
 
+/**
+ * BOX PLOT + JITTER OVERLAY
+ * Data-to-Viz: for n=150, add individual points over box plot
+ * Shows both summary stats AND raw distribution shape
+ */
 function buildBoxJitterChart(canvasId, restVals, gqlVals, yLabel='ms') {
-  function calcBoxStats(arr) {
-    if (!arr || arr.length === 0) return null;
-    const sorted = [...arr].sort((a, b) => a - b);
-    const n = sorted.length;
-    const q1 = percentile(sorted, 25);
-    const q3 = percentile(sorted, 75);
-    const iqr = q3 - q1;
-    const min = Math.max(sorted[0], q1 - 1.5 * iqr);
-    const max = Math.min(sorted[n - 1], q3 + 1.5 * iqr);
-    
-    return {
-      min: min,
-      q1: q1,
-      median: median(sorted),
-      q3: q3,
-      max: max,
-    };
-  }
-
-  const restStats = calcBoxStats(restVals);
-  const gqlStats = calcBoxStats(gqlVals);
-
-  if (!restStats || !gqlStats) {
-    console.warn('Dados insuficientes para boxplot');
-    return;
-  }
+  const rnd = seededRand(42);
+  const jitterW = 0.12;
 
   return mkChart(canvasId, {
     type: 'boxplot',
@@ -345,17 +342,25 @@ function buildBoxJitterChart(canvasId, restVals, gqlVals, yLabel='ms') {
       labels: ['REST', 'GraphQL'],
       datasets: [
         {
-          label: 'Métricas',
-          // Passamos os dois dados no mesmo array. 
-          // O primeiro objeto vai para 'REST' (índice 0) e o segundo para 'GraphQL' (índice 1)
-          data: [restStats, gqlStats], 
-          backgroundColor: [C.restBg, C.gqlBg],
-          borderColor: [C.rest, C.gql],
+          label: 'REST',
+          data: [restVals],
+          backgroundColor: C.restBg,
+          borderColor: C.rest,
           borderWidth: 2,
-          medianColor: [C.rest, C.gql],
-          outlierColor: [C.rest, C.gql],
+          medianColor: C.rest,
+          outlierColor: C.rest,
           itemRadius: 0,
-        }
+        },
+        {
+          label: 'GraphQL',
+          data: [gqlVals],
+          backgroundColor: C.gqlBg,
+          borderColor: C.gql,
+          borderWidth: 2,
+          medianColor: C.gql,
+          outlierColor: C.gql,
+          itemRadius: 0,
+        },
       ]
     },
     options: {
@@ -365,41 +370,35 @@ function buildBoxJitterChart(canvasId, restVals, gqlVals, yLabel='ms') {
         legend: { display: false },
         tooltip: {
           callbacks: {
-            label: function(context) {
-              const s = context.raw;
+            label: ctx => {
+              const s = ctx.raw;
               if (!s) return '';
               return [
-                ` Mediana: ${fmt(s.median, 2)} ${yLabel}`,
-                ` Q1: ${fmt(s.q1, 2)} · Q3: ${fmt(s.q3, 2)} ${yLabel}`,
-                ` Min: ${fmt(s.min, 2)} · Max: ${fmt(s.max, 2)} ${yLabel}`,
+                ` Mediana: ${fmt(s.median,2)} ${yLabel}`,
+                ` Q1: ${fmt(s.q1,2)} · Q3: ${fmt(s.q3,2)} ${yLabel}`,
+                ` Min: ${fmt(s.min,2)} · Max: ${fmt(s.max,2)} ${yLabel}`,
               ];
             }
           }
         }
       },
       scales: {
-        x: { 
-          ...baseScales.x, 
-          grid: { display: false } 
-        },
-        y: { 
-          ...baseScales.y, 
-          title: {
-            display: true,
-            text: yLabel,
-            color: C.text,
-            font: { size: 11 }
-          } 
-        }
+        x: { ...baseScales.x, grid:{display:false} },
+        y: { ...baseScales.y, title:{display:true,text:yLabel,color:C.text,font:{size:11}} }
       }
     }
   });
 }
 
+/**
+ * JITTER / STRIP PLOT
+ * Data-to-Viz: for n=150 individual observations — strip plot
+ * Shows every data point, reveals actual distribution shape
+ */
 function buildJitterChart(canvasId, restVals, gqlVals, xLabel='ms') {
   const rnd = seededRand(99);
-  const restPoints = restVals.map(v => ({ x: v, y: rnd() * 0.6 - 0.3 }));
-  const gqlPoints  = gqlVals.map(v => ({ x: v, y: rnd() * 0.6 + 0.7 }));
+  const restPoints = restVals.map(v => ({ x: v, y: rnd()*0.6-0.3 }));
+  const gqlPoints  = gqlVals.map(v => ({ x: v, y: rnd()*0.6+1-0.3 }));
 
   return mkChart(canvasId, {
     type: 'scatter',
@@ -441,11 +440,7 @@ function buildJitterChart(canvasId, restVals, gqlVals, xLabel='ms') {
         y: {
           ...baseScales.y,
           ticks: {
-            callback: v => {
-              if (v > 0.4 && v < 1.0) return 'GraphQL';
-              if (v > -0.4 && v < 0.1) return 'REST';
-              return '';
-            },
+            callback: v => v > 0.4 && v < 0.6 ? 'GraphQL' : v > -0.4 && v < 0.1 ? 'REST' : '',
             color: C.text,
             font: { size: 11 },
           },
@@ -457,17 +452,24 @@ function buildJitterChart(canvasId, restVals, gqlVals, xLabel='ms') {
   });
 }
 
+/**
+ * DIVERGING LOLLIPOP (horizontal)
+ * Data-to-Viz: lollipop for ranking + diverging for +/- values
+ * True lollipop = thin stick drawn by plugin + scatter dot at tip
+ */
 function buildDivergingLollipopChart(canvasId, groups, metric='tempo') {
   const values = groups.map(g => {
     const r = metric==='tempo' ? mean(g.rest_tempos)   : mean(g.rest_tamanhos);
     const q = metric==='tempo' ? mean(g.gql_tempos)    : mean(g.gql_tamanhos);
-    return +fmt(((r-q)/r*100), 2);
+    return +fmt(((r-q)/r*100), 2); // positive = GraphQL better
   });
   const dotColors = values.map(v => v>0 ? C.gql : C.rest);
 
+  // Sort ascending for readability
   const paired = groups.map((g,i)=>({name:shortName(g), val:values[i], color:dotColors[i]}));
   paired.sort((a,b)=>a.val-b.val);
 
+  // Plugin: draws stick (0→val) and dashed zero-line for each item
   const sticksPlugin = {
     id: 'lollipopSticks_' + canvasId,
     afterDatasetsDraw(chart) {
@@ -486,6 +488,7 @@ function buildDivergingLollipopChart(canvasId, groups, metric='tempo') {
         ctx.lineTo(px, py);
         ctx.stroke();
       });
+      // zero baseline
       ctx.globalAlpha = 0.8;
       ctx.strokeStyle = '#94a3b8';
       ctx.lineWidth = 1.5;
@@ -559,6 +562,10 @@ function buildDivergingLollipopChart(canvasId, groups, metric='tempo') {
   return ch;
 }
 
+/**
+ * GROUPED BAR CHART — absolute values per query
+ * Data-to-Viz: clear comparison between two categorical groups
+ */
 function buildGroupedBar(canvasId, groups, metric='tempo') {
   const labels = groups.map(shortName);
   const restData = groups.map(g => metric==='tempo' ? mean(g.rest_tempos) : mean(g.rest_tamanhos));
@@ -586,6 +593,11 @@ function buildGroupedBar(canvasId, groups, metric='tempo') {
   });
 }
 
+/**
+ * SCATTER PLOT — Tempo vs Tamanho
+ * Data-to-Viz: relationship between two quantitative variables
+ * Shows the tradeoff correlation between speed and payload size
+ */
 function buildScatterChart(canvasId, data) {
   const sample = data.filter((_,i)=>i%2===0);
   return mkChart(canvasId, {
@@ -654,8 +666,7 @@ function renderOverview() {
   const v1Val   = document.getElementById('verdict-rq1-val');
   const v1Stat  = document.getElementById('verdict-rq1-stat');
   const v1Badge = document.getElementById('verdict-rq1-badge');
-  
-  if (tempoGanho < 0) {
+  if (tempoGanho > 0) {
     v1Val.textContent  = 'REST mais rápido'; v1Val.style.color = C.rest;
     v1Stat.textContent = `GraphQL ${fmt(Math.abs(tempoGanho),1)}% mais lento`;
     v1Badge.className = 'verdict-badge rest-wins'; v1Badge.textContent = '🏁 REST vence em velocidade';
@@ -664,7 +675,6 @@ function renderOverview() {
     v1Stat.textContent = `GraphQL ${fmt(Math.abs(tempoGanho),1)}% mais rápido`;
     v1Badge.className = 'verdict-badge gql-wins'; v1Badge.textContent = '⚡ GraphQL vence em velocidade';
   }
-  
   const v2Val   = document.getElementById('verdict-rq2-val');
   const v2Stat  = document.getElementById('verdict-rq2-stat');
   const v2Badge = document.getElementById('verdict-rq2-badge');
@@ -678,7 +688,7 @@ function renderOverview() {
     v2Badge.className = 'verdict-badge rest-wins'; v2Badge.textContent = '📦 REST vence em tamanho';
   }
 
-  // Significance badges
+  // Significance badges (only once)
   document.querySelectorAll('.verdict-sig-extra').forEach(el=>el.remove());
   if (state.analise) {
     ['rq1','rq2'].forEach((rq, i) => {
@@ -691,35 +701,14 @@ function renderOverview() {
     });
   }
 
-  // Metric selector logic
-  const m = state.metric;
-  
-  const tempoElements = [
-    document.getElementById('chart-slope-tempo')?.parentElement,
-    document.getElementById('kpi-val-tempo-rest')?.closest('.kpi-card'),
-    document.getElementById('kpi-val-tempo-gql')?.closest('.kpi-card'),
-    document.getElementById('verdict-rq1-val')?.closest('.verdict-card')
-  ].filter(Boolean);
+  // Slope chart — Tempo REST→GraphQL per query (Data-to-Viz: connected scatter for paired data)
+  buildSlopeChart('chart-slope-tempo', groups, 'tempo');
 
-  const tamanhoElements = [
-    document.getElementById('chart-dumbbell-tam')?.parentElement,
-    document.getElementById('kpi-val-tam-rest')?.closest('.kpi-card'),
-    document.getElementById('kpi-val-tam-gql')?.closest('.kpi-card'),
-    document.getElementById('verdict-rq2-val')?.closest('.verdict-card')
-  ].filter(Boolean);
+  // Dumbbell chart — Tamanho REST vs GraphQL per query
+  buildDumbbellChart('chart-dumbbell-tam', groups, 'tamanho');
 
-  tempoElements.forEach(el => el.style.display = (m === 'both' || m === 'tempo') ? '' : 'none');
-  tamanhoElements.forEach(el => el.style.display = (m === 'both' || m === 'tamanho') ? '' : 'none');
-  
-  const scatterEl = document.getElementById('chart-scatter-overview');
-  if (scatterEl) {
-    scatterEl.style.display = (m === 'both') ? '' : 'none';
-  }
-
-  // Build charts
-  if (m === 'both' || m === 'tempo') buildSlopeChart('chart-slope-tempo', groups, 'tempo');
-  if (m === 'both' || m === 'tamanho') buildDumbbellChart('chart-dumbbell-tam', groups, 'tamanho');
-  if (m === 'both') buildScatterChart('chart-scatter-overview', data);
+  // Scatter — Tempo × Tamanho (correlation)
+  buildScatterChart('chart-scatter-overview', data);
 }
 
 // ── RENDER: RQ1 Tab ─────────────────────────────────────────────────────────
@@ -731,50 +720,46 @@ function renderRQ1() {
   // Hypothesis
   const sig = state.analise ? state.analise.rq1.teste_t.significativo : false;
   const hyp = document.getElementById('hyp-rq1-result');
-  if(hyp) {
-    hyp.textContent = sig ? 'H₀ REJEITADA' : 'H₀ NÃO REJEITADA';
-    hyp.className = 'hyp-result ' + (sig ? 'reject' : 'accept');
-  }
+  hyp.textContent = sig ? 'H₀ REJEITADA' : 'H₀ NÃO REJEITADA';
+  hyp.className = 'hyp-result ' + (sig ? 'reject' : 'accept');
 
   // Stat table
-  const tbody = document.getElementById('stat-table-rq1-body');
-  if(tbody) {
-    tbody.innerHTML = `
-      <tr>
-        <td><span class="tag-rest">REST</span></td>
-        <td>${fmtMs(mean(rt))}</td>
-        <td>${fmtMs(median(rt))}</td>
-        <td>${fmtMs(stddev(rt))}</td>
-        <td>${fmtMs(percentile(rt,95))}</td>
-        <td>${fmtMs(percentile(rt,99))}</td>
-      </tr>
-      <tr>
-        <td><span class="tag-gql">GraphQL</span></td>
-        <td>${fmtMs(mean(gt))}</td>
-        <td>${fmtMs(median(gt))}</td>
-        <td>${fmtMs(stddev(gt))}</td>
-        <td>${fmtMs(percentile(gt,95))}</td>
-        <td>${fmtMs(percentile(gt,99))}</td>
-      </tr>
-    `;
-  }
+  document.getElementById('stat-table-rq1-body').innerHTML = `
+    <tr>
+      <td><span class="tag-rest">REST</span></td>
+      <td>${fmtMs(mean(rt))}</td>
+      <td>${fmtMs(median(rt))}</td>
+      <td>${fmtMs(stddev(rt))}</td>
+      <td>${fmtMs(percentile(rt,95))}</td>
+      <td>${fmtMs(percentile(rt,99))}</td>
+    </tr>
+    <tr>
+      <td><span class="tag-gql">GraphQL</span></td>
+      <td>${fmtMs(mean(gt))}</td>
+      <td>${fmtMs(median(gt))}</td>
+      <td>${fmtMs(stddev(gt))}</td>
+      <td>${fmtMs(percentile(gt,95))}</td>
+      <td>${fmtMs(percentile(gt,99))}</td>
+    </tr>
+  `;
 
   // T-test
   if (state.analise) {
     const t = state.analise.rq1.teste_t;
-    const tStatEl = document.getElementById('tt-rq1-t');
-    const pValEl = document.getElementById('tt-rq1-p');
+    document.getElementById('tt-rq1-t').textContent = fmt(t.t_statistic,4);
+    document.getElementById('tt-rq1-p').textContent = t.p_value<=0.01 ? '< 0.01' : fmt(t.p_value,4);
     const sigEl = document.getElementById('tt-rq1-sig');
-    if(tStatEl) tStatEl.textContent = fmt(t.t_statistic,4);
-    if(pValEl) pValEl.textContent = t.p_value<=0.01 ? '< 0.01' : fmt(t.p_value,4);
-    if(sigEl) {
-      sigEl.textContent = t.significativo ? 'SIM ✓' : 'NÃO ✗';
-      sigEl.className = 'ttest-val ' + (t.significativo ? 'sig' : 'not-sig');
-    }
+    sigEl.textContent = t.significativo ? 'SIM ✓' : 'NÃO ✗';
+    sigEl.className = 'ttest-val ' + (t.significativo ? 'sig' : 'not-sig');
   }
 
+  // Box plot + jitter (Data-to-Viz: show individual points for n=150)
   buildBoxJitterChart('chart-boxplot-tempo', rt, gt, 'ms');
+
+  // Strip/Jitter plot — individual measurements (Data-to-Viz: strip plot reveals true distribution)
   buildJitterChart('chart-jitter-tempo', rt, gt, 'ms');
+
+  // Slope chart — tempo per query (paired comparison — Data-to-Viz: connected scatter)
   buildSlopeChart('chart-slope-rq1', groups, 'tempo');
 }
 
@@ -787,46 +772,42 @@ function renderRQ2() {
   // Hypothesis
   const sig = state.analise ? state.analise.rq2.teste_t.significativo : false;
   const hyp = document.getElementById('hyp-rq2-result');
-  if(hyp) {
-    hyp.textContent = sig ? 'H₀ REJEITADA' : 'H₀ NÃO REJEITADA';
-    hyp.className = 'hyp-result ' + (sig ? 'reject' : 'accept');
-  }
+  hyp.textContent = sig ? 'H₀ REJEITADA' : 'H₀ NÃO REJEITADA';
+  hyp.className = 'hyp-result ' + (sig ? 'reject' : 'accept');
 
   // Stat table
-  const tbody = document.getElementById('stat-table-rq2-body');
-  if(tbody) {
-    tbody.innerHTML = `
-      <tr>
-        <td><span class="tag-rest">REST</span></td>
-        <td>${fmtBytes(mean(rs))}</td>
-        <td>${fmtBytes(median(rs))}</td>
-        <td>${fmtBytes(Math.max(...rs))}</td>
-      </tr>
-      <tr>
-        <td><span class="tag-gql">GraphQL</span></td>
-        <td>${fmtBytes(mean(gs))}</td>
-        <td>${fmtBytes(median(gs))}</td>
-        <td>${fmtBytes(Math.max(...gs))}</td>
-      </tr>
-    `;
-  }
+  document.getElementById('stat-table-rq2-body').innerHTML = `
+    <tr>
+      <td><span class="tag-rest">REST</span></td>
+      <td>${fmtBytes(mean(rs))}</td>
+      <td>${fmtBytes(median(rs))}</td>
+      <td>${fmtBytes(Math.max(...rs))}</td>
+    </tr>
+    <tr>
+      <td><span class="tag-gql">GraphQL</span></td>
+      <td>${fmtBytes(mean(gs))}</td>
+      <td>${fmtBytes(median(gs))}</td>
+      <td>${fmtBytes(Math.max(...gs))}</td>
+    </tr>
+  `;
 
   // T-test
   if (state.analise) {
     const t = state.analise.rq2.teste_t;
-    const tStatEl = document.getElementById('tt-rq2-t');
-    const pValEl = document.getElementById('tt-rq2-p');
+    document.getElementById('tt-rq2-t').textContent = fmt(t.t_statistic,4);
+    document.getElementById('tt-rq2-p').textContent = t.p_value<=0.01 ? '< 0.01' : fmt(t.p_value,4);
     const sigEl = document.getElementById('tt-rq2-sig');
-    if(tStatEl) tStatEl.textContent = fmt(t.t_statistic,4);
-    if(pValEl) pValEl.textContent = t.p_value<=0.01 ? '< 0.01' : fmt(t.p_value,4);
-    if(sigEl) {
-      sigEl.textContent = t.significativo ? 'SIM ✓' : 'NÃO ✗';
-      sigEl.className = 'ttest-val ' + (t.significativo ? 'sig' : 'not-sig');
-    }
+    sigEl.textContent = t.significativo ? 'SIM ✓' : 'NÃO ✗';
+    sigEl.className = 'ttest-val ' + (t.significativo ? 'sig' : 'not-sig');
   }
 
+  // Box plot (Data-to-Viz: essential for distribution comparison)
   buildBoxJitterChart('chart-boxplot-tamanho', rs, gs, 'bytes');
+
+  // Diverging lollipop — % reduction (Data-to-Viz: lollipop for ranking; diverging for +/-)
   buildDivergingLollipopChart('chart-lollipop-tam', groups, 'tamanho');
+
+  // Grouped bar — absolute values (Data-to-Viz: grouped bar for categorical comparison)
   buildGroupedBar('chart-bars-tamanho', groups, 'tamanho');
 }
 
@@ -836,53 +817,57 @@ function renderQueries() {
   const groups = groupByQuery(data);
   const badges = ['q1','q2','q3','q4','q5'];
 
+  // Query detail cards
   const grid = document.getElementById('query-detail-grid');
-  if(grid) {
-    grid.innerHTML = '';
-    groups.forEach((g, idx) => {
-      const mRT = mean(g.rest_tempos), mGT = mean(g.gql_tempos);
-      const mRS = mean(g.rest_tamanhos), mGS = mean(g.gql_tamanhos);
-      const tG = (mRT-mGT)/mRT*100, sG = (mRS-mGS)/mRS*100;
-      const tClass  = tG>2?'positive':tG<-2?'negative':'neutral';
-      const tLabel  = tG>2?`GraphQL ${fmt(tG,1)}% mais rápido`:tG<-2?`REST ${fmt(Math.abs(tG),1)}% mais rápido`:'Desempenho semelhante';
-      const sClass  = sG>2?'positive':sG<-2?'negative':'neutral';
-      const sLabel  = sG>2?`GraphQL ${fmt(sG,1)}% menor`:sG<-2?`REST ${fmt(Math.abs(sG),1)}% menor`:'Tamanho semelhante';
-      const card = document.createElement('div');
-      card.className = 'qd-card';
-      card.innerHTML = `
-        <div class="qd-badge ${badges[idx]}">Consulta ${g.id}</div>
-        <div class="qd-name">${g.nome}</div>
-        <div class="qd-metrics">
-          <div class="qd-metric-row">
-            <span class="qd-metric-label">Tempo médio</span>
-            <div class="qd-metric-vals">
-              <span class="qd-pill rest">${fmtMs(mRT)}</span>
-              <span class="qd-pill gql">${fmtMs(mGT)}</span>
-            </div>
-          </div>
-          <div class="qd-metric-row">
-            <span class="qd-metric-label">Tamanho médio</span>
-            <div class="qd-metric-vals">
-              <span class="qd-pill rest">${fmtBytes(mRS)}</span>
-              <span class="qd-pill gql">${fmtBytes(mGS)}</span>
-            </div>
-          </div>
-          <div class="qd-metric-row">
-            <span class="qd-metric-label">Trials</span>
-            <span style="font-size:0.72rem;color:#64748b;">${g.rest_tempos.length}</span>
+  grid.innerHTML = '';
+  groups.forEach((g, idx) => {
+    const mRT = mean(g.rest_tempos), mGT = mean(g.gql_tempos);
+    const mRS = mean(g.rest_tamanhos), mGS = mean(g.gql_tamanhos);
+    const tG = (mRT-mGT)/mRT*100, sG = (mRS-mGS)/mRS*100;
+    const tClass  = tG>2?'positive':tG<-2?'negative':'neutral';
+    const tLabel  = tG>2?`GraphQL ${fmt(tG,1)}% mais rápido`:tG<-2?`REST ${fmt(Math.abs(tG),1)}% mais rápido`:'Desempenho semelhante';
+    const sClass  = sG>2?'positive':sG<-2?'negative':'neutral';
+    const sLabel  = sG>2?`GraphQL ${fmt(sG,1)}% menor`:sG<-2?`REST ${fmt(Math.abs(sG),1)}% menor`:'Tamanho semelhante';
+    const card = document.createElement('div');
+    card.className = 'qd-card';
+    card.innerHTML = `
+      <div class="qd-badge ${badges[idx]}">Consulta ${g.id}</div>
+      <div class="qd-name">${g.nome}</div>
+      <div class="qd-metrics">
+        <div class="qd-metric-row">
+          <span class="qd-metric-label">Tempo médio</span>
+          <div class="qd-metric-vals">
+            <span class="qd-pill rest">${fmtMs(mRT)}</span>
+            <span class="qd-pill gql">${fmtMs(mGT)}</span>
           </div>
         </div>
-        <div class="qd-gain">
-          ⏱ <span class="${tClass}">${tLabel}</span><br>
-          📦 <span class="${sClass}">${sLabel}</span>
+        <div class="qd-metric-row">
+          <span class="qd-metric-label">Tamanho médio</span>
+          <div class="qd-metric-vals">
+            <span class="qd-pill rest">${fmtBytes(mRS)}</span>
+            <span class="qd-pill gql">${fmtBytes(mGS)}</span>
+          </div>
         </div>
-      `;
-      grid.appendChild(card);
-    });
-  }
+        <div class="qd-metric-row">
+          <span class="qd-metric-label">Trials</span>
+          <span style="font-size:0.72rem;color:#64748b;">${g.rest_tempos.length}</span>
+        </div>
+      </div>
+      <div class="qd-gain">
+        ⏱ <span class="${tClass}">${tLabel}</span><br>
+        📦 <span class="${sClass}">${sLabel}</span>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
 
+  // Dumbbell chart — Tempo (Data-to-Viz: parallel dot plot for paired multi-query comparison)
   buildDumbbellChart('chart-dumbbell-tempo', groups, 'tempo');
+
+  // Diverging lollipop — Tempo % gain (Data-to-Viz: lollipop for ranked diverging values)
   buildDivergingLollipopChart('chart-lollipop-tempo', groups, 'tempo');
+
+  // Grouped bar — absolute tempo per query
   buildGroupedBar('chart-grouped-tempo', groups, 'tempo');
 }
 
@@ -902,97 +887,82 @@ function renderRaw() {
     gql_tam:    (a,b)=>a.graphql.tamanho_bytes-b.graphql.tamanho_bytes,
   };
   data = [...data].sort(sortFns[state.rawSort]||sortFns.timestamp);
-  
-  const rCount = document.getElementById('raw-count');
-  if(rCount) rCount.textContent = `${data.length} linhas`;
-  
+  document.getElementById('raw-count').textContent = `${data.length} linhas`;
   const total = Math.max(1, Math.ceil(data.length/state.rawPageSize));
   state.rawPage = Math.min(state.rawPage, total);
   const start = (state.rawPage-1)*state.rawPageSize;
   const page  = data.slice(start, start+state.rawPageSize);
   const tbody = document.getElementById('raw-table-body');
-  
-  if(tbody) {
-    tbody.innerHTML = '';
-    page.forEach((d,i) => {
-      const dT = d.graphql.tempo_ms-d.rest.tempo_ms;
-      const dS = d.graphql.tamanho_bytes-d.rest.tamanho_bytes;
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td class="td-muted">${start+i+1}</td>
-        <td class="td-query">${d.nome_consulta}</td>
-        <td>${d.id_param}</td>
-        <td class="td-rest">${fmtMs(d.rest.tempo_ms)}</td>
-        <td class="td-gql">${fmtMs(d.graphql.tempo_ms)}</td>
-        <td class="${dT>0?'td-delta-neg':'td-delta-pos'}">${dT>0?'+':''}${fmtMs(Math.abs(dT))}</td>
-        <td class="td-rest">${fmtBytes(d.rest.tamanho_bytes)}</td>
-        <td class="td-gql">${fmtBytes(d.graphql.tamanho_bytes)}</td>
-        <td class="${dS>0?'td-delta-neg':'td-delta-pos'}">${dS>0?'+':''}${fmtBytes(Math.abs(dS))}</td>
-        <td class="td-muted">${new Date(d.timestamp).toLocaleString('pt-BR')}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-  
+  tbody.innerHTML = '';
+  page.forEach((d,i) => {
+    const dT = d.graphql.tempo_ms-d.rest.tempo_ms;
+    const dS = d.graphql.tamanho_bytes-d.rest.tamanho_bytes;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="td-muted">${start+i+1}</td>
+      <td class="td-query">${d.nome_consulta}</td>
+      <td>${d.id_param}</td>
+      <td class="td-rest">${fmtMs(d.rest.tempo_ms)}</td>
+      <td class="td-gql">${fmtMs(d.graphql.tempo_ms)}</td>
+      <td class="${dT>0?'td-delta-neg':'td-delta-pos'}">${dT>0?'+':''}${fmtMs(Math.abs(dT))}</td>
+      <td class="td-rest">${fmtBytes(d.rest.tamanho_bytes)}</td>
+      <td class="td-gql">${fmtBytes(d.graphql.tamanho_bytes)}</td>
+      <td class="${dS>0?'td-delta-neg':'td-delta-pos'}">${dS>0?'+':''}${fmtBytes(Math.abs(dS))}</td>
+      <td class="td-muted">${new Date(d.timestamp).toLocaleString('pt-BR')}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  // Pagination
   const pag = document.getElementById('raw-pagination');
-  if(pag) {
-    pag.innerHTML = '';
-    const lo = Math.max(1, state.rawPage-3), hi = Math.min(total, lo+6);
-    for (let p=lo; p<=hi; p++) {
-      const btn = document.createElement('button');
-      btn.className = 'page-btn'+(p===state.rawPage?' active':'');
-      btn.textContent = p;
-      btn.addEventListener('click',()=>{state.rawPage=p;renderRaw();});
-      pag.appendChild(btn);
-    }
+  pag.innerHTML = '';
+  const lo = Math.max(1, state.rawPage-3), hi = Math.min(total, lo+6);
+  for (let p=lo; p<=hi; p++) {
+    const btn = document.createElement('button');
+    btn.className = 'page-btn'+(p===state.rawPage?' active':'');
+    btn.textContent = p;
+    btn.addEventListener('click',()=>{state.rawPage=p;renderRaw();});
+    pag.appendChild(btn);
   }
 }
 
 // ── RENDER: Sidebar ──────────────────────────────────────────────────────────
 function renderSidebar() {
   const data = state.allData.filter(d=>d.rest.status===200&&d.graphql.status===200);
-  
-  const qsTotal = document.getElementById('qs-total');
-  const qsQueries = document.getElementById('qs-queries');
-  const qsPeriod = document.getElementById('qs-period');
-  const tmHeader = document.getElementById('total-medicoes-header');
-  
-  if(qsTotal) qsTotal.textContent = data.length;
-  if(qsQueries) qsQueries.textContent = new Set(data.map(d=>d.id_consulta)).size;
-  if (data.length && qsPeriod) {
+  document.getElementById('qs-total').textContent = data.length;
+  document.getElementById('qs-queries').textContent = new Set(data.map(d=>d.id_consulta)).size;
+  if (data.length) {
     const d0 = new Date(Math.min(...data.map(d=>new Date(d.timestamp))));
-    qsPeriod.textContent = d0.toLocaleDateString('pt-BR');
+    document.getElementById('qs-period').textContent = d0.toLocaleDateString('pt-BR');
   }
-  if(tmHeader) tmHeader.textContent = data.length;
+  document.getElementById('total-medicoes-header').textContent = data.length;
 
+  // Query checkboxes
   const list = document.getElementById('query-filter-list');
-  if(list) {
-    list.innerHTML = '';
-    const names = {};
-    data.forEach(d=>{names[d.id_consulta]=d.nome_consulta;});
-    Object.entries(names).sort(([a],[b])=>Number(a)-Number(b)).forEach(([id,nome])=>{
-      const lbl = document.createElement('label');
-      lbl.className = 'query-filter-item';
-      lbl.innerHTML = `<input type="checkbox" value="${id}" checked/><span>${nome}</span>`;
-      lbl.querySelector('input').addEventListener('change',e=>{
-        if (e.target.checked) state.selectedQueries.delete(Number(id));
-        else state.selectedQueries.add(Number(id));
-        renderAll();
-      });
-      list.appendChild(lbl);
+  list.innerHTML = '';
+  const names = {};
+  data.forEach(d=>{names[d.id_consulta]=d.nome_consulta;});
+  Object.entries(names).sort(([a],[b])=>Number(a)-Number(b)).forEach(([id,nome])=>{
+    const lbl = document.createElement('label');
+    lbl.className = 'query-filter-item';
+    lbl.innerHTML = `<input type="checkbox" value="${id}" checked/><span>${nome}</span>`;
+    lbl.querySelector('input').addEventListener('change',e=>{
+      if (e.target.checked) state.selectedQueries.delete(Number(id));
+      else state.selectedQueries.add(Number(id));
+      renderAll();
     });
+    list.appendChild(lbl);
+  });
 
-    const sel = document.getElementById('raw-filter-query');
-    if(sel) {
-      sel.innerHTML = '<option value="">Todas as consultas</option>';
-      Object.entries(names).sort(([a],[b])=>Number(a)-Number(b)).forEach(([id,nome])=>{
-        const o = document.createElement('option');
-        o.value=id; o.textContent=nome; sel.appendChild(o);
-      });
-    }
-  }
+  // Raw filter dropdown
+  const sel = document.getElementById('raw-filter-query');
+  sel.innerHTML = '<option value="">Todas as consultas</option>';
+  Object.entries(names).sort(([a],[b])=>Number(a)-Number(b)).forEach(([id,nome])=>{
+    const o = document.createElement('option');
+    o.value=id; o.textContent=nome; sel.appendChild(o);
+  });
 }
 
+// ── Render active tab ────────────────────────────────────────────────────────
 function renderAll() {
   const active = document.querySelector('.tab-section.active');
   if (!active) return;
@@ -1021,13 +991,11 @@ function initTabs() {
 function initOutlierToggle() {
   const toggle = document.getElementById('outlier-toggle');
   const track  = document.getElementById('toggle-track');
-  if(toggle && track) {
-    toggle.addEventListener('click',()=>{
-      state.removeOutliers=!state.removeOutliers;
-      track.classList.toggle('on', state.removeOutliers);
-      renderAll();
-    });
-  }
+  toggle.addEventListener('click',()=>{
+    state.removeOutliers=!state.removeOutliers;
+    track.classList.toggle('on', state.removeOutliers);
+    renderAll();
+  });
 }
 
 function initMetricSelector() {
@@ -1042,33 +1010,23 @@ function initMetricSelector() {
 }
 
 function initRawControls() {
-  const rSearch = document.getElementById('raw-search');
-  const rFilter = document.getElementById('raw-filter-query');
-  const rSort = document.getElementById('raw-sort');
-  
-  if(rSearch) rSearch.addEventListener('input',e=>{state.rawSearch=e.target.value;state.rawPage=1;renderRaw();});
-  if(rFilter) rFilter.addEventListener('change',e=>{state.rawFilterQuery=e.target.value;state.rawPage=1;renderRaw();});
-  if(rSort) rSort.addEventListener('change',e=>{state.rawSort=e.target.value;state.rawPage=1;renderRaw();});
+  document.getElementById('raw-search').addEventListener('input',e=>{state.rawSearch=e.target.value;state.rawPage=1;renderRaw();});
+  document.getElementById('raw-filter-query').addEventListener('change',e=>{state.rawFilterQuery=e.target.value;state.rawPage=1;renderRaw();});
+  document.getElementById('raw-sort').addEventListener('change',e=>{state.rawSort=e.target.value;state.rawPage=1;renderRaw();});
 }
 
 // ── Data Loading ──────────────────────────────────────────────────────────────
 async function loadData() {
   try {
-    const [m,a] = await Promise.all([
-      fetch('./resultados/medicoes.json'),
-      fetch('./resultados/analise.json')
-    ]);
+    const [m,a] = await Promise.all([fetch('./resultados/medicoes.json'),fetch('./resultados/analise.json')]);
     state.allData = await m.json();
     state.analise = await a.json();
   } catch(e) {
-    const mainContent = document.querySelector('.main-content');
-    if(mainContent) {
-      mainContent.innerHTML = `
-        <div style="padding:60px;text-align:center;color:#dc2626;">
-          <h2 style="font-family:'Space Grotesk',sans-serif">Erro ao carregar dados</h2>
-          <p style="margin-top:8px;color:#64748b;">Abra via servidor HTTP: <code style="background:#f1f5f9;padding:4px 8px;border-radius:6px;border:1px solid #e2e8f0;">npx serve .</code></p>
-        </div>`;
-    }
+    document.querySelector('.main-content').innerHTML = `
+      <div style="padding:60px;text-align:center;color:#dc2626;">
+        <h2 style="font-family:'Space Grotesk',sans-serif">Erro ao carregar dados</h2>
+        <p style="margin-top:8px;color:#64748b;">Abra via servidor HTTP: <code style="background:#f1f5f9;padding:4px 8px;border-radius:6px;border:1px solid #e2e8f0;">npx serve .</code></p>
+      </div>`;
     return false;
   }
   return true;
