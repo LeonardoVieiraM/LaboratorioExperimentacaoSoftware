@@ -129,7 +129,6 @@ function groupByQuery(data) {
 
   const result = Object.values(g).sort((a,b)=>a.id-b.id);
 
-  // CORREÇÃO: Se o toggle estiver ativo, remove os outliers de cada grupo individualmente
   if (state.removeOutliers) {
     result.forEach(group => {
       group.rest_tempos = iqrFilter(group.rest_tempos);
@@ -166,8 +165,7 @@ const baseScales = {
 
 /**
  * SLOPE CHART (Connected dot plot)
- * Data-to-Viz: best for paired comparison showing direction of change
- * Perfect for REST→GraphQL per query type
+ * Data-to-Viz: paired comparison showing direction of change
  */
 function buildSlopeChart(canvasId, groups, metric='tempo', title='') {
   const labels = ['REST', 'GraphQL'];
@@ -223,8 +221,8 @@ function buildSlopeChart(canvasId, groups, metric='tempo', title='') {
 
 /**
  * DUMBBELL CHART (horizontal dot plot with range line)
- * Data-to-Viz: parallel dot plot — best for showing REST vs GraphQL per query
- * Encodes direction and magnitude clearly without distortion
+ * Data-to-Viz: parallel dot plot
+ * Encodes direction and magnitude
  */
 function buildDumbbellChart(canvasId, groups, metric='tempo') {
   const labels = groups.map(shortName);
@@ -232,7 +230,6 @@ function buildDumbbellChart(canvasId, groups, metric='tempo') {
   const gqlVals  = groups.map(g => metric==='tempo' ? mean(g.gql_tempos)  : mean(g.gql_tamanhos));
   const xLabel   = metric==='tempo' ? 'Tempo (ms)' : 'Tamanho (bytes)';
 
-  // Custom plugin to draw connecting lines between REST and GQL dots
   const dumbbellLinePlugin = {
     id: 'dumbbellLines_' + canvasId,
     afterDatasetsDraw(chart) {
@@ -242,7 +239,8 @@ function buildDumbbellChart(canvasId, groups, metric='tempo') {
         const rv = restVals[i], gv = gqlVals[i];
         const px1 = x.getPixelForValue(rv);
         const px2 = x.getPixelForValue(gv);
-        const py  = y.getPixelForValue(i);
+        const py  = y.getPixelForValue(labels[i]); 
+        
         ctx.strokeStyle = 'rgba(100,116,139,0.35)';
         ctx.lineWidth = 4;
         ctx.lineCap = 'round';
@@ -266,7 +264,7 @@ function buildDumbbellChart(canvasId, groups, metric='tempo') {
       datasets: [
         {
           label: 'REST',
-          data: restVals.map((v, i) => ({ x: v, y: i })),
+          data: restVals.map((v, i) => ({ x: v, y: labels[i] })),
           backgroundColor: C.rest,
           borderColor: '#fff',
           borderWidth: 2,
@@ -277,7 +275,7 @@ function buildDumbbellChart(canvasId, groups, metric='tempo') {
         },
         {
           label: 'GraphQL',
-          data: gqlVals.map((v, i) => ({ x: v, y: i })),
+          data: gqlVals.map((v, i) => ({ x: v, y: labels[i] })),
           backgroundColor: C.gql,
           borderColor: '#fff',
           borderWidth: 2,
@@ -308,15 +306,11 @@ function buildDumbbellChart(canvasId, groups, metric='tempo') {
           title: { display: true, text: xLabel, color: C.text, font:{size:11} }
         },
         y: {
-          ...baseScales.y,
-          type: 'linear',
-          min: -0.5,
-          max: groups.length - 0.5,
+          type: 'category',
+          labels: labels,
           ticks: {
-            stepSize: 1,
             color: C.text,
             font: { size: 11 },
-            callback: (val) => labels[val] ?? '',
           },
           grid: { display: false },
         }
@@ -330,7 +324,7 @@ function buildDumbbellChart(canvasId, groups, metric='tempo') {
 /**
  * BOX PLOT + JITTER OVERLAY
  * Data-to-Viz: for n=150, add individual points over box plot
- * Shows both summary stats AND raw distribution shape
+ * Shows summary stats and raw distribution shape
  */
 function buildBoxJitterChart(canvasId, restVals, gqlVals, yLabel='ms') {
   const rnd = seededRand(42);
@@ -393,7 +387,7 @@ function buildBoxJitterChart(canvasId, restVals, gqlVals, yLabel='ms') {
 /**
  * JITTER / STRIP PLOT
  * Data-to-Viz: for n=150 individual observations — strip plot
- * Shows every data point, reveals actual distribution shape
+ * Shows every data point, reveals distribution shape
  */
 function buildJitterChart(canvasId, restVals, gqlVals, xLabel='ms') {
   const rnd = seededRand(99);
@@ -455,21 +449,19 @@ function buildJitterChart(canvasId, restVals, gqlVals, xLabel='ms') {
 /**
  * DIVERGING LOLLIPOP (horizontal)
  * Data-to-Viz: lollipop for ranking + diverging for +/- values
- * True lollipop = thin stick drawn by plugin + scatter dot at tip
+ * lollipop = thin stick drawn by plugin + scatter dot at tip
  */
 function buildDivergingLollipopChart(canvasId, groups, metric='tempo') {
   const values = groups.map(g => {
     const r = metric==='tempo' ? mean(g.rest_tempos)   : mean(g.rest_tamanhos);
     const q = metric==='tempo' ? mean(g.gql_tempos)    : mean(g.gql_tamanhos);
-    return +fmt(((r-q)/r*100), 2); // positive = GraphQL better
+    return +fmt(((r-q)/r*100), 2);
   });
   const dotColors = values.map(v => v>0 ? C.gql : C.rest);
 
-  // Sort ascending for readability
   const paired = groups.map((g,i)=>({name:shortName(g), val:values[i], color:dotColors[i]}));
   paired.sort((a,b)=>a.val-b.val);
-
-  // Plugin: draws stick (0→val) and dashed zero-line for each item
+  const orderedLabels = paired.map(p => p.name);
   const sticksPlugin = {
     id: 'lollipopSticks_' + canvasId,
     afterDatasetsDraw(chart) {
@@ -478,7 +470,8 @@ function buildDivergingLollipopChart(canvasId, groups, metric='tempo') {
       ctx.save();
       paired.forEach((p, i) => {
         const px = x.getPixelForValue(p.val);
-        const py = y.getPixelForValue(i);
+        const py = y.getPixelForValue(p.name); 
+        
         ctx.strokeStyle = p.color;
         ctx.globalAlpha = 0.55;
         ctx.lineWidth = 3;
@@ -488,7 +481,6 @@ function buildDivergingLollipopChart(canvasId, groups, metric='tempo') {
         ctx.lineTo(px, py);
         ctx.stroke();
       });
-      // zero baseline
       ctx.globalAlpha = 0.8;
       ctx.strokeStyle = '#94a3b8';
       ctx.lineWidth = 1.5;
@@ -512,7 +504,7 @@ function buildDivergingLollipopChart(canvasId, groups, metric='tempo') {
     data: {
       datasets: [{
         label: '% Ganho',
-        data: paired.map((p, i) => ({ x: p.val, y: i })),
+        data: paired.map(p => ({ x: p.val, y: p.name })),
         backgroundColor: paired.map(p => p.color),
         borderColor: '#fff',
         borderWidth: 2,
@@ -543,15 +535,11 @@ function buildDivergingLollipopChart(canvasId, groups, metric='tempo') {
           title: { display:true, text:'% (positivo = GraphQL melhor)', color:C.text, font:{size:11} },
         },
         y: {
-          ...baseScales.y,
-          type: 'linear',
-          min: -0.5,
-          max: paired.length - 0.5,
+          type: 'category',
+          labels: orderedLabels,
           ticks: {
-            stepSize: 1,
             color: C.text,
             font: { size: 11 },
-            callback: val => paired[val]?.name ?? '',
           },
           grid: { display: false },
         }
@@ -562,10 +550,6 @@ function buildDivergingLollipopChart(canvasId, groups, metric='tempo') {
   return ch;
 }
 
-/**
- * GROUPED BAR CHART — absolute values per query
- * Data-to-Viz: clear comparison between two categorical groups
- */
 function buildGroupedBar(canvasId, groups, metric='tempo') {
   const labels = groups.map(shortName);
   const restData = groups.map(g => metric==='tempo' ? mean(g.rest_tempos) : mean(g.rest_tamanhos));
