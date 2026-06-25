@@ -134,7 +134,7 @@ const consultas = [
   }
 ];
 
-// IDs aleatórios para testes (garantindo variedade)
+// IDs aleatórios para testes
 const usuariosIds = [1, 42, 87, 123, 256, 389, 410, 450, 487, 500];
 const postsIds = [100, 500, 1000, 2000, 3000, 4000, 4500, 4800, 4950, 4999];
 
@@ -150,7 +150,7 @@ function getRandomPostId() {
 function gerarCenariosTeste() {
   const cenarios = [];
   
-  for (let i = 0; i < 30; i++) { // 30 repetições por tipo de consulta
+  for (let i = 0; i < 500; i++) { // N repetições por tipo de consulta
     for (const consulta of consultas) {
       let id;
       if (consulta.id === 5) {
