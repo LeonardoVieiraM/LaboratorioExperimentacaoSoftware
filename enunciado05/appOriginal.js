@@ -111,35 +111,13 @@ function getTamanhos(data) {
 function groupByQuery(data) {
   const g = {};
   data.forEach(d => {
-    if (!g[d.id_consulta]) {
-      g[d.id_consulta] = {
-        id: d.id_consulta,
-        nome: d.nome_consulta,
-        rest_tempos: [],
-        gql_tempos: [],
-        rest_tamanhos: [],
-        gql_tamanhos: []
-      };
-    }
+    if (!g[d.id_consulta]) g[d.id_consulta] = {id:d.id_consulta,nome:d.nome_consulta,rest_tempos:[],gql_tempos:[],rest_tamanhos:[],gql_tamanhos:[]};
     g[d.id_consulta].rest_tempos.push(d.rest.tempo_ms);
     g[d.id_consulta].gql_tempos.push(d.graphql.tempo_ms);
     g[d.id_consulta].rest_tamanhos.push(d.rest.tamanho_bytes);
     g[d.id_consulta].gql_tamanhos.push(d.graphql.tamanho_bytes);
   });
-
-  const result = Object.values(g).sort((a,b)=>a.id-b.id);
-
-  // CORREÇÃO: Se o toggle estiver ativo, remove os outliers de cada grupo individualmente
-  if (state.removeOutliers) {
-    result.forEach(group => {
-      group.rest_tempos = iqrFilter(group.rest_tempos);
-      group.gql_tempos  = iqrFilter(group.gql_tempos);
-      group.rest_tamanhos = iqrFilter(group.rest_tamanhos);
-      group.gql_tamanhos  = iqrFilter(group.gql_tamanhos);
-    });
-  }
-
-  return result;
+  return Object.values(g).sort((a,b)=>a.id-b.id);
 }
 
 const shortName = g => g.nome.length > 22 ? g.nome.substring(0,20)+'…' : g.nome;
