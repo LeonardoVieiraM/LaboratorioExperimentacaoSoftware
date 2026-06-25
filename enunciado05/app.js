@@ -173,8 +173,12 @@ function buildSlopeChart(canvasId, groups, metric='tempo', title='') {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      layout: { padding: { right: 10 } },
       plugins: {
-        legend: { position: 'right', labels: { font: { size: 11 }, padding: 10 } },
+        legend: {
+          position: 'bottom',
+          labels: { font: { size: 11 }, padding: 12, boxWidth: 12 }
+        },
         tooltip: {
           callbacks: {
             label: ctx => {
@@ -202,55 +206,62 @@ function buildSlopeChart(canvasId, groups, metric='tempo', title='') {
  */
 function buildDumbbellChart(canvasId, groups, metric='tempo') {
   const labels = groups.map(shortName);
+  const restVals = groups.map(g => metric==='tempo' ? mean(g.rest_tempos) : mean(g.rest_tamanhos));
+  const gqlVals  = groups.map(g => metric==='tempo' ? mean(g.gql_tempos)  : mean(g.gql_tamanhos));
+  const xLabel   = metric==='tempo' ? 'Tempo (ms)' : 'Tamanho (bytes)';
 
-  // Floating bar: [min, max] to draw the connecting line
-  const floatingBars = groups.map(g => {
-    const r = metric==='tempo' ? mean(g.rest_tempos)   : mean(g.rest_tamanhos);
-    const q = metric==='tempo' ? mean(g.gql_tempos)    : mean(g.gql_tamanhos);
-    return [Math.min(r,q), Math.max(r,q)];
-  });
-  const restDots = groups.map(g =>
-    metric==='tempo' ? mean(g.rest_tempos) : mean(g.rest_tamanhos)
-  );
-  const gqlDots = groups.map(g =>
-    metric==='tempo' ? mean(g.gql_tempos) : mean(g.gql_tamanhos)
-  );
+  // Custom plugin to draw connecting lines between REST and GQL dots
+  const dumbbellLinePlugin = {
+    id: 'dumbbellLines_' + canvasId,
+    afterDatasetsDraw(chart) {
+      const { ctx, scales: { x, y } } = chart;
+      ctx.save();
+      groups.forEach((g, i) => {
+        const rv = restVals[i], gv = gqlVals[i];
+        const px1 = x.getPixelForValue(rv);
+        const px2 = x.getPixelForValue(gv);
+        const py  = y.getPixelForValue(i);
+        ctx.strokeStyle = 'rgba(100,116,139,0.35)';
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(px1, py);
+        ctx.lineTo(px2, py);
+        ctx.stroke();
+      });
+      ctx.restore();
+    }
+  };
 
-  return mkChart(canvasId, {
-    type: 'bar',
+  destroyChart(canvasId);
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+
+  const ch = new Chart(canvas, {
+    type: 'scatter',
+    plugins: [dumbbellLinePlugin],
     data: {
-      labels,
       datasets: [
         {
-          label: 'Range',
-          data: floatingBars,
-          backgroundColor: 'rgba(100,116,139,0.18)',
-          borderColor: 'rgba(100,116,139,0.3)',
-          borderWidth: 0,
-          barThickness: 5,
-          borderRadius: 3,
-          order: 3,
-        },
-        {
-          type: 'scatter',
           label: 'REST',
-          data: restDots.map((v,i)=>({x:v, y:i})),
+          data: restVals.map((v, i) => ({ x: v, y: i })),
           backgroundColor: C.rest,
           borderColor: '#fff',
           borderWidth: 2,
-          pointRadius: 9,
-          pointHoverRadius: 11,
+          pointRadius: 10,
+          pointHoverRadius: 12,
+          pointStyle: 'circle',
           order: 1,
         },
         {
-          type: 'scatter',
           label: 'GraphQL',
-          data: gqlDots.map((v,i)=>({x:v, y:i})),
+          data: gqlVals.map((v, i) => ({ x: v, y: i })),
           backgroundColor: C.gql,
           borderColor: '#fff',
           borderWidth: 2,
-          pointRadius: 9,
-          pointHoverRadius: 11,
+          pointRadius: 10,
+          pointHoverRadius: 12,
+          pointStyle: 'circle',
           order: 2,
         }
       ]
@@ -258,19 +269,12 @@ function buildDumbbellChart(canvasId, groups, metric='tempo') {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      indexAxis: 'y',
       plugins: {
-        legend: {
-          labels: {
-            filter: item => item.text !== 'Range',
-            font: { size: 11 },
-          }
-        },
+        legend: { position: 'top', labels: { font:{size:11}, padding:12, boxWidth:11 } },
         tooltip: {
           callbacks: {
             label: ctx => {
-              if (ctx.dataset.label==='Range') return null;
-              const v = ctx.datasetIndex===1 ? restDots[ctx.dataIndex] : gqlDots[ctx.dataIndex];
+              const v = ctx.parsed.x;
               return ` ${ctx.dataset.label}: ${metric==='tempo' ? fmtMs(v) : fmtBytes(v)}`;
             }
           }
@@ -279,12 +283,26 @@ function buildDumbbellChart(canvasId, groups, metric='tempo') {
       scales: {
         x: {
           ...baseScales.x,
-          title: { display: true, text: metric==='tempo' ? 'Tempo (ms)' : 'Tamanho (bytes)', color: C.text, font:{size:11} }
+          title: { display: true, text: xLabel, color: C.text, font:{size:11} }
         },
-        y: { ...baseScales.y, grid: { display: false } }
+        y: {
+          ...baseScales.y,
+          type: 'linear',
+          min: -0.5,
+          max: groups.length - 0.5,
+          ticks: {
+            stepSize: 1,
+            color: C.text,
+            font: { size: 11 },
+            callback: (val) => labels[val] ?? '',
+          },
+          grid: { display: false },
+        }
       }
     }
   });
+  charts[canvasId] = ch;
+  return ch;
 }
 
 /**
@@ -415,7 +433,7 @@ function buildJitterChart(canvasId, restVals, gqlVals, xLabel='ms') {
 /**
  * DIVERGING LOLLIPOP (horizontal)
  * Data-to-Viz: lollipop for ranking + diverging for +/- values
- * Shows which queries GraphQL wins/loses and by how much
+ * True lollipop = thin stick drawn by plugin + scatter dot at tip
  */
 function buildDivergingLollipopChart(canvasId, groups, metric='tempo') {
   const values = groups.map(g => {
@@ -423,31 +441,67 @@ function buildDivergingLollipopChart(canvasId, groups, metric='tempo') {
     const q = metric==='tempo' ? mean(g.gql_tempos)    : mean(g.gql_tamanhos);
     return +fmt(((r-q)/r*100), 2); // positive = GraphQL better
   });
-  const colors = values.map(v => v>0 ? C.gql : C.rest);
-  const bgColors = values.map(v => v>0 ? C.gqlDim : C.restDim);
+  const dotColors = values.map(v => v>0 ? C.gql : C.rest);
 
-  // Sort by value for better readability
-  const paired = groups.map((g,i)=>({name:shortName(g),val:values[i],color:colors[i],bg:bgColors[i]}));
+  // Sort ascending for readability
+  const paired = groups.map((g,i)=>({name:shortName(g), val:values[i], color:dotColors[i]}));
   paired.sort((a,b)=>a.val-b.val);
 
-  return mkChart(canvasId, {
-    type: 'bar',
+  // Plugin: draws stick (0→val) and dashed zero-line for each item
+  const sticksPlugin = {
+    id: 'lollipopSticks_' + canvasId,
+    afterDatasetsDraw(chart) {
+      const { ctx, scales: { x, y } } = chart;
+      const x0 = x.getPixelForValue(0);
+      ctx.save();
+      paired.forEach((p, i) => {
+        const px = x.getPixelForValue(p.val);
+        const py = y.getPixelForValue(i);
+        ctx.strokeStyle = p.color;
+        ctx.globalAlpha = 0.55;
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'butt';
+        ctx.beginPath();
+        ctx.moveTo(x0, py);
+        ctx.lineTo(px, py);
+        ctx.stroke();
+      });
+      // zero baseline
+      ctx.globalAlpha = 0.8;
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      ctx.moveTo(x0, chart.chartArea.top);
+      ctx.lineTo(x0, chart.chartArea.bottom);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+  };
+
+  destroyChart(canvasId);
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+
+  const ch = new Chart(canvas, {
+    type: 'scatter',
+    plugins: [sticksPlugin],
     data: {
-      labels: paired.map(p=>p.name),
       datasets: [{
-        label: '% Ganho GraphQL',
-        data: paired.map(p=>p.val),
-        backgroundColor: paired.map(p=>p.bg),
-        borderColor: paired.map(p=>p.color),
+        label: '% Ganho',
+        data: paired.map((p, i) => ({ x: p.val, y: i })),
+        backgroundColor: paired.map(p => p.color),
+        borderColor: '#fff',
         borderWidth: 2,
-        borderRadius: 4,
-        barThickness: 20,
+        pointRadius: 9,
+        pointHoverRadius: 11,
+        pointStyle: 'circle',
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      indexAxis: 'y',
       plugins: {
         legend: { display: false },
         tooltip: {
@@ -464,13 +518,26 @@ function buildDivergingLollipopChart(canvasId, groups, metric='tempo') {
       scales: {
         x: {
           ...baseScales.x,
-          title:{display:true, text:'% (+ = GraphQL melhor)', color:C.text, font:{size:11}},
-          grid: { color: (ctx) => ctx.tick.value===0 ? '#94a3b8' : C.grid }
+          title: { display:true, text:'% (positivo = GraphQL melhor)', color:C.text, font:{size:11} },
         },
-        y: { ...baseScales.y, grid:{display:false} }
+        y: {
+          ...baseScales.y,
+          type: 'linear',
+          min: -0.5,
+          max: paired.length - 0.5,
+          ticks: {
+            stepSize: 1,
+            color: C.text,
+            font: { size: 11 },
+            callback: val => paired[val]?.name ?? '',
+          },
+          grid: { display: false },
+        }
       }
     }
   });
+  charts[canvasId] = ch;
+  return ch;
 }
 
 /**

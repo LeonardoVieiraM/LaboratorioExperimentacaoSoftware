@@ -127,24 +127,26 @@ body {
 .tab-nav {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
   background: var(--bg-card-alt);
   border: 1px solid var(--border);
   padding: 4px;
   border-radius: 50px;
-  flex: 1;
-  max-width: 600px;
+  width: fit-content;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
+.tab-nav::-webkit-scrollbar { display: none; }
 .tab-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 7px 16px;
+  gap: 5px;
+  padding: 6px 13px;
   border: none;
   background: transparent;
   color: var(--text-muted);
   font-family: var(--font-sans);
-  font-size: 0.77rem;
+  font-size: 0.74rem;
   font-weight: 500;
   border-radius: 40px;
   cursor: pointer;
@@ -470,7 +472,7 @@ body {
 .chart-subtitle { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 12px; }
 .chart-card canvas {
   display: block;
-  max-height: 240px;
+  max-height: 260px;
   width: 100% !important;
 }
 
