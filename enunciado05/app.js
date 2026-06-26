@@ -685,13 +685,18 @@ function renderOverview() {
     });
   }
 
-  // Slope chart — Tempo REST→GraphQL per query (Data-to-Viz: connected scatter for paired data)
-  buildSlopeChart('chart-slope-tempo', groups, 'tempo');
+  // Charts — respect metric filter
+  // When metric='tempo', show slope (tempo) and hide dumbbell (tamanho); vice-versa; 'both' shows both
+  const showTempo   = state.metric === 'both' || state.metric === 'tempo';
+  const showTamanho = state.metric === 'both' || state.metric === 'tamanho';
 
-  // Dumbbell chart — Tamanho REST vs GraphQL per query
-  buildDumbbellChart('chart-dumbbell-tam', groups, 'tamanho');
+  if (showTempo)   buildSlopeChart('chart-slope-tempo', groups, 'tempo');
+  else             destroyChart('chart-slope-tempo');
 
-  // Scatter — Tempo × Tamanho (correlation)
+  if (showTamanho) buildDumbbellChart('chart-dumbbell-tam', groups, 'tamanho');
+  else             destroyChart('chart-dumbbell-tam');
+
+  // Scatter always visible (shows both axes)
   buildScatterChart('chart-scatter-overview', data);
 }
 
@@ -845,14 +850,21 @@ function renderQueries() {
     grid.appendChild(card);
   });
 
+  // Charts — respect metric filter
+  const showTempo   = state.metric === 'both' || state.metric === 'tempo';
+  const showTamanho = state.metric === 'both' || state.metric === 'tamanho';
+
   // Dumbbell chart — Tempo (Data-to-Viz: parallel dot plot for paired multi-query comparison)
-  buildDumbbellChart('chart-dumbbell-tempo', groups, 'tempo');
+  if (showTempo) buildDumbbellChart('chart-dumbbell-tempo', groups, 'tempo');
+  else           destroyChart('chart-dumbbell-tempo');
 
   // Diverging lollipop — Tempo % gain (Data-to-Viz: lollipop for ranked diverging values)
-  buildDivergingLollipopChart('chart-lollipop-tempo', groups, 'tempo');
+  if (showTempo) buildDivergingLollipopChart('chart-lollipop-tempo', groups, 'tempo');
+  else           destroyChart('chart-lollipop-tempo');
 
   // Grouped bar — absolute tempo per query
-  buildGroupedBar('chart-grouped-tempo', groups, 'tempo');
+  if (showTempo) buildGroupedBar('chart-grouped-tempo', groups, 'tempo');
+  else           destroyChart('chart-grouped-tempo');
 }
 
 // ── RENDER: Raw Data ─────────────────────────────────────────────────────────
@@ -948,6 +960,9 @@ function renderSidebar() {
 
 // ── Render active tab ────────────────────────────────────────────────────────
 function renderAll() {
+  // Sync metric filter to body so CSS can show/hide elements
+  document.body.dataset.metric = state.metric;
+
   const active = document.querySelector('.tab-section.active');
   if (!active) return;
   switch(active.id.replace('tab-','')) {

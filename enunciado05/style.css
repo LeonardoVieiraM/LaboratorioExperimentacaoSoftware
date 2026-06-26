@@ -67,6 +67,18 @@ body {
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
+/* ── Metric filter visibility ─────────────────────────────── */
+/* Elements tagged [data-metric-group] hide when metric doesn't match */
+[data-metric-group] {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+body[data-metric="tempo"]   [data-metric-group="tamanho"] {
+  display: none !important;
+}
+body[data-metric="tamanho"] [data-metric-group="tempo"] {
+  display: none !important;
+}
+
 /* ============================================================
    HEADER
    ============================================================ */

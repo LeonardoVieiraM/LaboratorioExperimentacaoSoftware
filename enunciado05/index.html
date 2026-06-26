@@ -110,25 +110,25 @@
           </div>
 
           <div class="kpi-grid">
-            <div class="kpi-card">
+            <div class="kpi-card" data-metric-group="tempo">
               <div class="kpi-icon">⏱</div>
               <div class="kpi-label">Tempo Médio REST</div>
               <div class="kpi-value" id="kpi-val-tempo-rest">—</div>
               <div class="kpi-sub">mediana: <span id="kpi-med-tempo-rest">—</span></div>
             </div>
-            <div class="kpi-card">
+            <div class="kpi-card" data-metric-group="tempo">
               <div class="kpi-icon">⚡</div>
               <div class="kpi-label">Tempo Médio GraphQL</div>
               <div class="kpi-value" id="kpi-val-tempo-gql">—</div>
               <div class="kpi-sub">mediana: <span id="kpi-med-tempo-gql">—</span></div>
             </div>
-            <div class="kpi-card">
+            <div class="kpi-card" data-metric-group="tamanho">
               <div class="kpi-icon">📦</div>
               <div class="kpi-label">Tamanho Médio REST</div>
               <div class="kpi-value" id="kpi-val-tam-rest">—</div>
               <div class="kpi-sub">mediana: <span id="kpi-med-tam-rest">—</span></div>
             </div>
-            <div class="kpi-card">
+            <div class="kpi-card" data-metric-group="tamanho">
               <div class="kpi-icon">🗜</div>
               <div class="kpi-label">Tamanho Médio GraphQL</div>
               <div class="kpi-value" id="kpi-val-tam-gql">—</div>
@@ -137,13 +137,13 @@
           </div>
 
           <div class="verdict-grid">
-            <div class="verdict-card">
+            <div class="verdict-card" data-metric-group="tempo">
               <div class="verdict-label">RQ1 · Tempo de Resposta</div>
               <div class="verdict-value" id="verdict-rq1-val">—</div>
               <div class="verdict-stat" id="verdict-rq1-stat">—</div>
               <div class="verdict-badge" id="verdict-rq1-badge">Aguardando…</div>
             </div>
-            <div class="verdict-card">
+            <div class="verdict-card" data-metric-group="tamanho">
               <div class="verdict-label">RQ2 · Tamanho do Payload</div>
               <div class="verdict-value" id="verdict-rq2-val">—</div>
               <div class="verdict-stat" id="verdict-rq2-stat">—</div>
@@ -153,12 +153,12 @@
 
           <!-- Slope + Dumbbell side by side -->
           <div class="charts-row">
-            <div class="chart-card">
+            <div class="chart-card" data-metric-group="tempo">
               <div class="chart-title">Slope Chart — Tempo REST → GraphQL por Consulta</div>
               <div class="chart-subtitle">Gráfico de inclinação (Data-to-Viz): mostra direção e magnitude da mudança entre protocolos para cada tipo de consulta</div>
               <canvas id="chart-slope-tempo" height="220"></canvas>
             </div>
-            <div class="chart-card">
+            <div class="chart-card" data-metric-group="tamanho">
               <div class="chart-title">Dumbbell Chart — Tamanho de Payload por Consulta</div>
               <div class="chart-subtitle">Plot de pontos paralelos (Data-to-Viz): compara REST ● e GraphQL ● para cada consulta — distância mostra a diferença</div>
               <canvas id="chart-dumbbell-tam" height="220"></canvas>
@@ -289,19 +289,19 @@
           <div class="query-detail-grid" id="query-detail-grid"></div>
 
           <div class="charts-row">
-            <div class="chart-card">
+            <div class="chart-card" data-metric-group="tempo">
               <div class="chart-title">Dumbbell Chart — Tempo por Consulta</div>
               <div class="chart-subtitle">Pontos paralelos (Data-to-Viz): ● REST · ● GraphQL — comprimento da linha = magnitude da diferença</div>
               <canvas id="chart-dumbbell-tempo" height="220"></canvas>
             </div>
-            <div class="chart-card">
+            <div class="chart-card" data-metric-group="tempo">
               <div class="chart-title">Lollipop Divergente — Ganho % de Tempo</div>
               <div class="chart-subtitle">Lollipop (Data-to-Viz): positivo = GraphQL mais rápido, negativo = REST mais rápido</div>
               <canvas id="chart-lollipop-tempo" height="220"></canvas>
             </div>
           </div>
 
-          <div class="chart-card full-width">
+          <div class="chart-card full-width" data-metric-group="tempo">
             <div class="chart-title">Barras Agrupadas — Tempo Médio por Consulta</div>
             <div class="chart-subtitle">Comparação REST vs GraphQL em milissegundos para cada tipo de consulta</div>
             <canvas id="chart-grouped-tempo" height="190"></canvas>
